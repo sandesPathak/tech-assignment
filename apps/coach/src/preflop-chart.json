@@ -1,0 +1,6954 @@
+{
+  "meta": {
+    "source": "Hijack Poker simplified 6-max GTO chart. Approximation level: tightness threshold per position + always-open whitelist. Modeled on Upswing/Snowie published charts; see scripts/gen-preflop-chart.js.",
+    "generated_at": "2026-05-02T02:48:14.411Z",
+    "positions": [
+      "UTG",
+      "MP",
+      "CO",
+      "BTN",
+      "SB",
+      "BB"
+    ],
+    "range_sizes": {
+      "UTG": 111,
+      "MP": 118,
+      "CO": 126,
+      "BTN": 142,
+      "SB": 137,
+      "BB": 144
+    },
+    "classes": 169
+  },
+  "chart": {
+    "22": {
+      "strength": 0.55,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.48,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.48,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.48,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.48,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.48,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.48,
+          "callEv": 0.63,
+          "foldEv": 0
+        }
+      }
+    },
+    "33": {
+      "strength": 0.588,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.63,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.63,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.63,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.63,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.63,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.63,
+          "callEv": 0.72,
+          "foldEv": 0
+        }
+      }
+    },
+    "44": {
+      "strength": 0.625,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.78,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.78,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.78,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.78,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.78,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.78,
+          "callEv": 0.81,
+          "foldEv": 0
+        }
+      }
+    },
+    "55": {
+      "strength": 0.663,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.93,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.93,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.93,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.93,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.93,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.93,
+          "callEv": 0.91,
+          "foldEv": 0
+        }
+      }
+    },
+    "66": {
+      "strength": 0.7,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 2.08,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 2.08,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 2.08,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 2.08,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 2.08,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 2.08,
+          "callEv": 1,
+          "foldEv": 0
+        }
+      }
+    },
+    "77": {
+      "strength": 0.738,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 2.23,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 2.23,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 2.23,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 2.23,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 2.23,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 2.23,
+          "callEv": 1.09,
+          "foldEv": 0
+        }
+      }
+    },
+    "88": {
+      "strength": 0.775,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 2.38,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 2.38,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 2.38,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 2.38,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 2.38,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 2.38,
+          "callEv": 1.19,
+          "foldEv": 0
+        }
+      }
+    },
+    "99": {
+      "strength": 0.813,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 2.53,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 2.53,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 2.53,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 2.53,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 2.53,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 2.53,
+          "callEv": 1.28,
+          "foldEv": 0
+        }
+      }
+    },
+    "1010": {
+      "strength": null,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "AA": {
+      "strength": 1,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 3.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 3.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 3.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 3.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 3.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 3.28,
+          "callEv": 1.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "AKs": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "AQs": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "AJs": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "A10s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "A9s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "A8s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "A7s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "A6s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "A5s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "A4s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "A3s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "A2s": {
+      "strength": 0.59,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.64,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.64,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.64,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.64,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.64,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.64,
+          "callEv": 0.73,
+          "foldEv": 0
+        }
+      }
+    },
+    "AKo": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "KK": {
+      "strength": 0.963,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 3.13,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 3.13,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 3.13,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 3.13,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 3.13,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 3.13,
+          "callEv": 1.66,
+          "foldEv": 0
+        }
+      }
+    },
+    "KQs": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "KJs": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "K10s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "K9s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "K8s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "K7s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "K6s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "K5s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "K4s": {
+      "strength": 0.582,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": 0.7,
+          "foldEv": 0
+        }
+      }
+    },
+    "K3s": {
+      "strength": 0.54,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": 0.6,
+          "foldEv": 0
+        }
+      }
+    },
+    "K2s": {
+      "strength": 0.498,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": 0.5,
+          "foldEv": 0
+        }
+      }
+    },
+    "AQo": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "KQo": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "QQ": {
+      "strength": 0.925,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 2.98,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 2.98,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 2.98,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 2.98,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 2.98,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 2.98,
+          "callEv": 1.56,
+          "foldEv": 0
+        }
+      }
+    },
+    "QJs": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q10s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q9s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q8s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q7s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q6s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q5s": {
+      "strength": 0.582,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": 0.7,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q4s": {
+      "strength": 0.54,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": 0.6,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q3s": {
+      "strength": 0.498,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": 0.5,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q2s": {
+      "strength": 0.457,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": 0.39,
+          "foldEv": 0
+        }
+      }
+    },
+    "AJo": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "KJo": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "QJo": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "JJ": {
+      "strength": 0.888,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 2.83,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 2.83,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 2.83,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 2.83,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 2.83,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 2.83,
+          "callEv": 1.47,
+          "foldEv": 0
+        }
+      }
+    },
+    "J10s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "J9s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "J8s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "J7s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "J6s": {
+      "strength": 0.582,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": 0.7,
+          "foldEv": 0
+        }
+      }
+    },
+    "J5s": {
+      "strength": 0.54,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.44,
+          "callEv": 0.6,
+          "foldEv": 0
+        }
+      }
+    },
+    "J4s": {
+      "strength": 0.498,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": 0.5,
+          "foldEv": 0
+        }
+      }
+    },
+    "J3s": {
+      "strength": 0.457,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": 0.39,
+          "foldEv": 0
+        }
+      }
+    },
+    "J2s": {
+      "strength": 0.415,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": 0.29,
+          "foldEv": 0
+        }
+      }
+    },
+    "A10o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "K10o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q10o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "J10o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "109s": {
+      "strength": null,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "108s": {
+      "strength": null,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "107s": {
+      "strength": null,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "106s": {
+      "strength": null,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "105s": {
+      "strength": null,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "104s": {
+      "strength": null,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "103s": {
+      "strength": null,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "102s": {
+      "strength": null,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "A9o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "K9o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q9o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "J9o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "109o": {
+      "strength": null,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "98s": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "97s": {
+      "strength": 0.555,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.5,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.5,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.5,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.5,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.5,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.5,
+          "callEv": 0.64,
+          "foldEv": 0
+        }
+      }
+    },
+    "96s": {
+      "strength": 0.498,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.27,
+          "callEv": 0.5,
+          "foldEv": 0
+        }
+      }
+    },
+    "95s": {
+      "strength": 0.457,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": 0.39,
+          "foldEv": 0
+        }
+      }
+    },
+    "94s": {
+      "strength": 0.415,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": 0.29,
+          "foldEv": 0
+        }
+      }
+    },
+    "93s": {
+      "strength": 0.373,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 0.77,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.77,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.77,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.77,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.77,
+          "callEv": 0.18,
+          "foldEv": 0
+        }
+      }
+    },
+    "92s": {
+      "strength": 0.332,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": 0.08,
+          "foldEv": 0
+        }
+      }
+    },
+    "A8o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "K8o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q8o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "J8o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "108o": {
+      "strength": null,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "98o": {
+      "strength": 0.572,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.57,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.57,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.57,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.57,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.57,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.57,
+          "callEv": 0.68,
+          "foldEv": 0
+        }
+      }
+    },
+    "87s": {
+      "strength": 0.528,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.39,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.39,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.39,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.39,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.39,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.39,
+          "callEv": 0.57,
+          "foldEv": 0
+        }
+      }
+    },
+    "86s": {
+      "strength": 0.472,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.17,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.17,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.17,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.17,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.17,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.17,
+          "callEv": 0.43,
+          "foldEv": 0
+        }
+      }
+    },
+    "85s": {
+      "strength": 0.415,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.94,
+          "callEv": 0.29,
+          "foldEv": 0
+        }
+      }
+    },
+    "84s": {
+      "strength": 0.373,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 0.77,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.77,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.77,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.77,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.77,
+          "callEv": 0.18,
+          "foldEv": 0
+        }
+      }
+    },
+    "83s": {
+      "strength": 0.332,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": 0.08,
+          "foldEv": 0
+        }
+      }
+    },
+    "82s": {
+      "strength": 0.29,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.44,
+          "callEv": -0.03,
+          "foldEv": 0
+        }
+      }
+    },
+    "A7o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "K7o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q7o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "J7o": {
+      "strength": 0.583,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": 0.71,
+          "foldEv": 0
+        }
+      }
+    },
+    "107o": {
+      "strength": null,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "97o": {
+      "strength": 0.515,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.34,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.34,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.34,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.34,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.34,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.34,
+          "callEv": 0.54,
+          "foldEv": 0
+        }
+      }
+    },
+    "87o": {
+      "strength": 0.488,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.23,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.23,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.23,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.23,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.23,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.23,
+          "callEv": 0.47,
+          "foldEv": 0
+        }
+      }
+    },
+    "76s": {
+      "strength": 0.445,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.06,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.06,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.06,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.06,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.06,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.06,
+          "callEv": 0.36,
+          "foldEv": 0
+        }
+      }
+    },
+    "75s": {
+      "strength": 0.388,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 0.83,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.83,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.83,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.83,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.83,
+          "callEv": 0.22,
+          "foldEv": 0
+        }
+      }
+    },
+    "74s": {
+      "strength": 0.332,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": 0.08,
+          "foldEv": 0
+        }
+      }
+    },
+    "73s": {
+      "strength": 0.29,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.44,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.44,
+          "callEv": -0.03,
+          "foldEv": 0
+        }
+      }
+    },
+    "72s": {
+      "strength": 0.248,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.27,
+          "callEv": -0.13,
+          "foldEv": 0
+        }
+      }
+    },
+    "A6o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "K6o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q6o": {
+      "strength": 0.583,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": 0.71,
+          "foldEv": 0
+        }
+      }
+    },
+    "J6o": {
+      "strength": 0.542,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": 0.6,
+          "foldEv": 0
+        }
+      }
+    },
+    "106o": {
+      "strength": null,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "96o": {
+      "strength": 0.458,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": 0.4,
+          "foldEv": 0
+        }
+      }
+    },
+    "86o": {
+      "strength": 0.432,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.01,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.01,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.01,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.01,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.01,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.01,
+          "callEv": 0.33,
+          "foldEv": 0
+        }
+      }
+    },
+    "76o": {
+      "strength": 0.405,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 0.9,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 0.9,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.9,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.9,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.9,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.9,
+          "callEv": 0.26,
+          "foldEv": 0
+        }
+      }
+    },
+    "65s": {
+      "strength": 0.362,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 0.73,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.73,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.73,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.73,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.73,
+          "callEv": 0.15,
+          "foldEv": 0
+        }
+      }
+    },
+    "64s": {
+      "strength": 0.305,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.5,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.5,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.5,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.5,
+          "callEv": 0.01,
+          "foldEv": 0
+        }
+      }
+    },
+    "63s": {
+      "strength": 0.248,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.27,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.27,
+          "callEv": -0.13,
+          "foldEv": 0
+        }
+      }
+    },
+    "62s": {
+      "strength": 0.207,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.11,
+          "callEv": -0.23,
+          "foldEv": 0
+        }
+      }
+    },
+    "A5o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "K5o": {
+      "strength": 0.583,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.61,
+          "callEv": 0.71,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q5o": {
+      "strength": 0.542,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": 0.6,
+          "foldEv": 0
+        }
+      }
+    },
+    "J5o": {
+      "strength": 0.5,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": 0.5,
+          "foldEv": 0
+        }
+      }
+    },
+    "105o": {
+      "strength": null,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "95o": {
+      "strength": 0.417,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": 0.29,
+          "foldEv": 0
+        }
+      }
+    },
+    "85o": {
+      "strength": 0.375,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 0.78,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.78,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.78,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.78,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.78,
+          "callEv": 0.19,
+          "foldEv": 0
+        }
+      }
+    },
+    "75o": {
+      "strength": 0.348,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.67,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.67,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.67,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.67,
+          "callEv": 0.12,
+          "foldEv": 0
+        }
+      }
+    },
+    "65o": {
+      "strength": 0.322,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.57,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.57,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.57,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.57,
+          "callEv": 0.05,
+          "foldEv": 0
+        }
+      }
+    },
+    "54s": {
+      "strength": 0.278,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.39,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.39,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.39,
+          "callEv": -0.05,
+          "foldEv": 0
+        }
+      }
+    },
+    "53s": {
+      "strength": 0.222,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.17,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.17,
+          "callEv": -0.2,
+          "foldEv": 0
+        }
+      }
+    },
+    "52s": {
+      "strength": 0.165,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "call",
+          "openEv": -0.05,
+          "callEv": -0.34,
+          "foldEv": 0
+        }
+      }
+    },
+    "A4o": {
+      "strength": 0.6,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.68,
+          "callEv": 0.75,
+          "foldEv": 0
+        }
+      }
+    },
+    "K4o": {
+      "strength": 0.542,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.45,
+          "callEv": 0.6,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q4o": {
+      "strength": 0.5,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": 0.5,
+          "foldEv": 0
+        }
+      }
+    },
+    "J4o": {
+      "strength": 0.458,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": 0.4,
+          "foldEv": 0
+        }
+      }
+    },
+    "104o": {
+      "strength": null,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "94o": {
+      "strength": 0.375,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 0.78,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.78,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.78,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.78,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.78,
+          "callEv": 0.19,
+          "foldEv": 0
+        }
+      }
+    },
+    "84o": {
+      "strength": 0.333,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": 0.08,
+          "foldEv": 0
+        }
+      }
+    },
+    "74o": {
+      "strength": 0.292,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.45,
+          "callEv": -0.02,
+          "foldEv": 0
+        }
+      }
+    },
+    "64o": {
+      "strength": 0.265,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.34,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.34,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.34,
+          "callEv": -0.09,
+          "foldEv": 0
+        }
+      }
+    },
+    "54o": {
+      "strength": 0.238,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.23,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.23,
+          "callEv": -0.15,
+          "foldEv": 0
+        }
+      }
+    },
+    "43s": {
+      "strength": 0.195,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.06,
+          "callEv": -0.26,
+          "foldEv": 0
+        }
+      }
+    },
+    "42s": {
+      "strength": 0.138,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "call",
+          "openEv": -0.05,
+          "callEv": -0.4,
+          "foldEv": 0
+        }
+      }
+    },
+    "A3o": {
+      "strength": 0.592,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.65,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.65,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.65,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.65,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.65,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.65,
+          "callEv": 0.73,
+          "foldEv": 0
+        }
+      }
+    },
+    "K3o": {
+      "strength": 0.5,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.28,
+          "callEv": 0.5,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q3o": {
+      "strength": 0.458,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": 0.4,
+          "foldEv": 0
+        }
+      }
+    },
+    "J3o": {
+      "strength": 0.417,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": 0.29,
+          "foldEv": 0
+        }
+      }
+    },
+    "103o": {
+      "strength": null,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "93o": {
+      "strength": 0.333,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.61,
+          "callEv": 0.08,
+          "foldEv": 0
+        }
+      }
+    },
+    "83o": {
+      "strength": 0.292,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.45,
+          "callEv": -0.02,
+          "foldEv": 0
+        }
+      }
+    },
+    "73o": {
+      "strength": 0.25,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.28,
+          "callEv": -0.12,
+          "foldEv": 0
+        }
+      }
+    },
+    "63o": {
+      "strength": 0.208,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.11,
+          "callEv": -0.23,
+          "foldEv": 0
+        }
+      }
+    },
+    "53o": {
+      "strength": 0.182,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.01,
+          "callEv": -0.3,
+          "foldEv": 0
+        }
+      }
+    },
+    "43o": {
+      "strength": 0.155,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "call",
+          "openEv": -0.05,
+          "callEv": -0.36,
+          "foldEv": 0
+        }
+      }
+    },
+    "32s": {
+      "strength": 0.112,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "call",
+          "openEv": -0.05,
+          "callEv": -0.47,
+          "foldEv": 0
+        }
+      }
+    },
+    "A2o": {
+      "strength": 0.55,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.48,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.48,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.48,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.48,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.48,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.48,
+          "callEv": 0.63,
+          "foldEv": 0
+        }
+      }
+    },
+    "K2o": {
+      "strength": 0.458,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 1.11,
+          "callEv": 0.4,
+          "foldEv": 0
+        }
+      }
+    },
+    "Q2o": {
+      "strength": 0.417,
+      "byPos": {
+        "UTG": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.95,
+          "callEv": 0.29,
+          "foldEv": 0
+        }
+      }
+    },
+    "J2o": {
+      "strength": 0.375,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "raise",
+          "openEv": 0.78,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "raise",
+          "openEv": 0.78,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.78,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.78,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.78,
+          "callEv": 0.19,
+          "foldEv": 0
+        }
+      }
+    },
+    "102o": {
+      "strength": null,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "92o": {
+      "strength": 0.292,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.45,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.45,
+          "callEv": -0.02,
+          "foldEv": 0
+        }
+      }
+    },
+    "82o": {
+      "strength": 0.25,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "raise",
+          "openEv": 0.28,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.28,
+          "callEv": -0.12,
+          "foldEv": 0
+        }
+      }
+    },
+    "72o": {
+      "strength": 0.208,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "raise",
+          "openEv": 0.11,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "raise",
+          "openEv": 0.11,
+          "callEv": -0.23,
+          "foldEv": 0
+        }
+      }
+    },
+    "62o": {
+      "strength": 0.167,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "call",
+          "openEv": -0.05,
+          "callEv": -0.33,
+          "foldEv": 0
+        }
+      }
+    },
+    "52o": {
+      "strength": 0.125,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "call",
+          "openEv": -0.05,
+          "callEv": -0.44,
+          "foldEv": 0
+        }
+      }
+    },
+    "42o": {
+      "strength": 0.098,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    },
+    "32o": {
+      "strength": 0.072,
+      "byPos": {
+        "UTG": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "MP": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "CO": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BTN": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "SB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        },
+        "BB": {
+          "action": "fold",
+          "openEv": -0.05,
+          "callEv": -0.1,
+          "foldEv": 0
+        }
+      }
+    }
+  }
+}

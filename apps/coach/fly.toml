@@ -1,0 +1,21 @@
+# Fly.io config for the Hijack Poker coach worker.
+#
+# Build context is the repo root so the Dockerfile can pull the
+# workspace packages. Single shard is plenty — the coach is bounded
+# by Anthropic API throughput, not local CPU.
+#
+# Deploy:
+#   fly deploy --config apps/coach/fly.toml --dockerfile apps/coach/Dockerfile
+
+app = "hijack-coach"
+primary_region = "ord"
+
+[build]
+  dockerfile = "apps/coach/Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

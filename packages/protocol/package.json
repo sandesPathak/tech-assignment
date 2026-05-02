@@ -10,7 +10,8 @@
       "types": "./src/index.ts",
       "default": "./src/messages.js"
     },
-    "./messages": "./src/messages.js"
+    "./messages": "./src/messages.js",
+    "./stakes": "./src/stakes.js"
   },
   "scripts": {
     "test": "echo \"no protocol-package tests yet\" && exit 0",

@@ -8,6 +8,7 @@ const { Publisher } = require('./publish');
 const { initTracing, shutdownTracing } = require('@hijack/observability/tracing');
 const { createLogger } = require('@hijack/observability/logger');
 const { ShardMetricsReporter } = require('@hijack/observability/shard-metrics');
+const { Matchmaker } = require('./matchmaker');
 
 /**
  * Boot the worker:
@@ -27,6 +28,12 @@ async function main() {
   const stateStore = new StateStore({ redis, eventStore });
   const publisher = new Publisher({ redis, log: (evt, fields) => log.warn(fields, evt) });
   const server = createServer({ stateStore, publisher, log });
+  const matchmaker = new Matchmaker({
+    redis,
+    stateStore,
+    log: (evt, fields) => log.warn(fields, evt),
+  });
+  matchmaker.start();
   const port = parseInt(process.env.PORT || '3001', 10);
 
   // Shard metrics — every 5s, write `metrics:shard:{id}` so the gateway
@@ -46,6 +53,7 @@ async function main() {
   const shutdown = async (signal) => {
     log.info({ signal }, 'worker_shutting_down');
     reporter.stop();
+    matchmaker.stop();
     server.close();
     await eventStore.close();
     redis.disconnect();

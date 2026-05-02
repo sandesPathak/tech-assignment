@@ -14,6 +14,8 @@ const C2S = Object.freeze({
   JOIN: 'c2s.join',
   ACTION: 'c2s.action',
   LEAVE: 'c2s.leave',
+  LOBBY_SUBSCRIBE: 'c2s.lobby_subscribe',
+  LOBBY_UNSUBSCRIBE: 'c2s.lobby_unsubscribe',
 });
 
 const S2C = Object.freeze({
@@ -21,6 +23,8 @@ const S2C = Object.freeze({
   DELTA: 's2c.delta',
   ERROR: 's2c.error',
   KICKED: 's2c.kicked',
+  LOBBY_STATE: 's2c.lobby_state',
+  LOBBY_DELTA: 's2c.lobby_delta',
 });
 
 const ACTIONS = Object.freeze({
@@ -64,6 +68,27 @@ function kicked(reason) {
   return { t: S2C.KICKED, reason };
 }
 
+// ─── Lobby builders ──────────────────────────────────────────────────────
+
+/**
+ * Full lobby state for a stake — sent on `c2s.lobby_subscribe` and after
+ * any reconnect. Carries the array of tables with seat counts.
+ */
+function lobbyState(stake, tables) {
+  return { t: S2C.LOBBY_STATE, stake, tables };
+}
+
+/**
+ * Incremental lobby update — `seat_filled`, `seat_freed`, `table_added`,
+ * `table_removed`. Payload shape varies by `kind`.
+ */
+function lobbyDelta(stake, kind, payload) {
+  // Spread payload first so the discriminator fields (`t`, `stake`, `kind`)
+  // can never be shadowed by the worker-side payload (which carries its
+  // own `t` like 'seat_filled' / 'table_added' that becomes our `kind`).
+  return { ...payload, t: S2C.LOBBY_DELTA, stake, kind };
+}
+
 module.exports = {
   C2S,
   S2C,
@@ -74,4 +99,6 @@ module.exports = {
   delta,
   error,
   kicked,
+  lobbyState,
+  lobbyDelta,
 };

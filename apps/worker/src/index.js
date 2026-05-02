@@ -5,6 +5,9 @@ const { StateStore } = require('./state-store');
 const { createHandEventStore } = require('./hand-event-store');
 const { createServer } = require('./server');
 const { Publisher } = require('./publish');
+const { initTracing, shutdownTracing } = require('@hijack/observability/tracing');
+const { createLogger } = require('@hijack/observability/logger');
+const { ShardMetricsReporter } = require('@hijack/observability/shard-metrics');
 
 /**
  * Boot the worker:
@@ -15,23 +18,38 @@ const { Publisher } = require('./publish');
  *   - Start HTTP server on PORT (default 3001).
  */
 async function main() {
+  // No-op when OTEL_EXPORTER_OTLP_ENDPOINT is unset.
+  await initTracing({ serviceName: 'hijack-worker' });
+  const log = createLogger({ serviceName: 'hijack-worker' });
+
   const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
   const eventStore = await createHandEventStore();
   const stateStore = new StateStore({ redis, eventStore });
-  const publisher = new Publisher({ redis, log: (...a) => console.warn('[worker]', ...a) });
-  const server = createServer({ stateStore, publisher });
+  const publisher = new Publisher({ redis, log: (evt, fields) => log.warn(fields, evt) });
+  const server = createServer({ stateStore, publisher, log });
   const port = parseInt(process.env.PORT || '3001', 10);
 
+  // Shard metrics — every 5s, write `metrics:shard:{id}` so the gateway
+  // can decide when to load-shed new joins.
+  const shardId = process.env.SHARD_ID || 'shard-0';
+  const reporter = new ShardMetricsReporter({
+    redis,
+    shardId,
+    sampler: () => stateStore.sampleShardMetrics(),
+    log: (evt, fields) => log.warn(fields, evt),
+  });
+  reporter.start();
+
   await new Promise((resolve) => server.listen(port, resolve));
-  // eslint-disable-next-line no-console
-  console.log(`[worker] listening on :${port}`);
+  log.info({ port, shardId }, 'worker_listening');
 
   const shutdown = async (signal) => {
-    // eslint-disable-next-line no-console
-    console.log(`[worker] ${signal} received, shutting down`);
+    log.info({ signal }, 'worker_shutting_down');
+    reporter.stop();
     server.close();
     await eventStore.close();
     redis.disconnect();
+    await shutdownTracing();
     process.exit(0);
   };
   process.on('SIGINT', () => shutdown('SIGINT'));

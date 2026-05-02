@@ -21,8 +21,10 @@
  */
 
 const { S2C } = require('@hijack/protocol/messages');
+const { injectTraceContext } = require('@hijack/observability/tracing');
 
 const channelFor = (tableId) => `table:${tableId}:events`;
+const HAND_COMPLETED_CHANNEL = 'hand:completed';
 
 class Publisher {
   /**
@@ -49,6 +51,9 @@ class Publisher {
       payload: ev.payload,
       handId: ev.handId,
     };
+    // Stamp the active span's traceparent so the gateway can extract it
+    // and continue the same trace across the Redis pub/sub boundary.
+    injectTraceContext(msg, ev.traceparent);
     try {
       await this.redis.publish(channelFor(tableId), JSON.stringify(msg));
     } catch (err) {
@@ -56,11 +61,42 @@ class Publisher {
       this.log('publish_failed', { tableId, seq: ev.seq, err: err.message });
     }
   }
+
+  /**
+   * Publish a `hand_completed` signal after the worker reaches step 16
+   * (RECORD_STATS_AND_NEW_HAND). Consumed by `apps/coach`, which loads
+   * the durable hand-event range [1, lastSeq] and runs EV analysis.
+   *
+   * Best-effort like `publishTick` — durable record is in Neon, so the
+   * coach can be replayed off a cron if Redis pub/sub drops a message.
+   *
+   * @param {object} ev { handId, tableId, lastSeq, gameNo }
+   */
+  async publishHandCompleted(ev) {
+    const msg = {
+      handId: ev.handId,
+      tableId: String(ev.tableId),
+      gameNo: ev.gameNo,
+      lastSeq: ev.lastSeq,
+      // Range is [fromSeq, toSeq) — coach reads HandEventStore.range().
+      // gateway/coach can reconstruct the hand from any subset.
+      fromSeq: 1,
+      toSeq: ev.lastSeq + 1,
+      completedAt: new Date().toISOString(),
+    };
+    injectTraceContext(msg);
+    try {
+      await this.redis.publish(HAND_COMPLETED_CHANNEL, JSON.stringify(msg));
+    } catch (err) {
+      this.log('publish_hand_completed_failed', { handId: ev.handId, err: err.message });
+    }
+  }
 }
 
 /** No-op publisher used when no Redis is wired (unit tests). */
 class NullPublisher {
   async publishTick() {}
+  async publishHandCompleted() {}
 }
 
-module.exports = { Publisher, NullPublisher, channelFor };
+module.exports = { Publisher, NullPublisher, channelFor, HAND_COMPLETED_CHANNEL };

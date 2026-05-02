@@ -12,8 +12,13 @@ const Redis = require('ioredis');
 const { Gateway } = require('./ws-server');
 const { StateStore } = require('@hijack/worker/src/state-store');
 const { createHandEventStore } = require('@hijack/worker/src/hand-event-store');
+const { initTracing, shutdownTracing } = require('@hijack/observability/tracing');
+const { createLogger } = require('@hijack/observability/logger');
 
 async function main() {
+  await initTracing({ serviceName: 'hijack-gateway' });
+  const log = createLogger({ serviceName: 'hijack-gateway' });
+
   const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
   const redis = new Redis(redisUrl);
   const eventStore = await createHandEventStore();
@@ -24,19 +29,18 @@ async function main() {
     subscriberFactory: () => new Redis(redisUrl),
     stateStore,
     eventStore,
-    log: (...a) => console.warn('[gateway]', ...a),
+    log: (evt, fields) => log.warn(fields, evt),
   });
 
   const port = parseInt(process.env.PORT || '3002', 10);
   await gateway.start({ port });
-  // eslint-disable-next-line no-console
-  console.log(`[gateway] listening on :${port}`);
+  log.info({ port }, 'gateway_listening');
 
   const shutdown = async (signal) => {
-    // eslint-disable-next-line no-console
-    console.log(`[gateway] ${signal} received, shutting down`);
+    log.info({ signal }, 'gateway_shutting_down');
     await gateway.stop();
     redis.disconnect();
+    await shutdownTracing();
     process.exit(0);
   };
   process.on('SIGINT', () => shutdown('SIGINT'));

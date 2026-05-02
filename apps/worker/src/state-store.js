@@ -46,6 +46,23 @@ class StateStore {
     this.eventStore = opts.eventStore;
     this.snapshotEvery = opts.snapshotEvery || SNAPSHOT_EVERY;
     this.eventTailCap = opts.eventTailCap || EVENT_TAIL_CAP;
+    // Light bookkeeping for shard-metrics sampler.
+    this._tableSet = new Set();
+    this._lagEmaMs = 0;
+    this._lastTickTs = 0;
+  }
+
+  /**
+   * Snapshot of shard-level signals for the metrics reporter. Cheap —
+   * we maintain three small counters in `applyTick`/`initTable`. Memory
+   * percent is sampled separately by the reporter via process.memoryUsage.
+   */
+  sampleShardMetrics() {
+    return {
+      tables: this._tableSet.size,
+      lagMs: this._lagEmaMs,
+      lastTickTs: this._lastTickTs,
+    };
   }
 
   /**
@@ -72,6 +89,7 @@ class StateStore {
     pipe.set(KEY_SEQ(tableId), 0);
     pipe.set(KEY_SNAPSHOT(tableId), JSON.stringify({ ...state, seq: 0 }));
     await pipe.exec();
+    this._tableSet.add(String(tableId));
   }
 
   /**
@@ -86,6 +104,8 @@ class StateStore {
    * @param {string} handId stable id for this hand (e.g. `${tableId}:${gameNo}`)
    */
   async applyTick(tableId, state, event, handId) {
+    const tickStart = Date.now();
+    this._tableSet.add(String(tableId));
     const seq = await this.redis.incr(KEY_SEQ(tableId));
     const stateWithSeq = { ...state, seq };
     const encoded = encodeTableState(stateWithSeq);
@@ -117,6 +137,11 @@ class StateStore {
       step: event.step,
       payload: event.payload,
     });
+
+    // Lag EMA for shard-metrics. alpha=0.2 — recent ticks dominate.
+    const lag = Date.now() - tickStart;
+    this._lagEmaMs = this._lagEmaMs === 0 ? lag : (this._lagEmaMs * 0.8 + lag * 0.2);
+    this._lastTickTs = Date.now();
 
     return seq;
   }

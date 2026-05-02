@@ -3,6 +3,7 @@
 const { advance, getStepName } = require('./engine-runner');
 const { GAME_HAND } = require('@hijack/engine');
 const { NullPublisher } = require('./publish');
+const { withSpan } = require('@hijack/observability/tracing');
 
 /**
  * processTable — single advance of the table state machine.
@@ -17,6 +18,14 @@ const { NullPublisher } = require('./publish');
  * existing /process-style tests keep working.
  */
 async function processTable(stateStore, tableId, playerAction, publisher) {
+  return withSpan(
+    'worker.processTable',
+    { 'hijack.table_id': String(tableId), 'hijack.action': playerAction?.action },
+    () => _processTableInner(stateStore, tableId, playerAction, publisher)
+  );
+}
+
+async function _processTableInner(stateStore, tableId, playerAction, publisher) {
   const pub = publisher || new NullPublisher();
   const state = await stateStore.loadTable(tableId);
   if (!state) {
@@ -61,13 +70,29 @@ async function processTable(stateStore, tableId, playerAction, publisher) {
     payload,
   });
 
+  const handDone = result.game.handStep === GAME_HAND.RECORD_STATS_AND_NEW_HAND;
+
+  // Phase 7: notify the coach worker. Fired exactly once per hand,
+  // after step 16 (RECORD_STATS_AND_NEW_HAND). The coach reads the
+  // durable hand-event range to reconstruct decisions and produce
+  // EV analysis. Best-effort like `publishTick` — coach can be
+  // replayed off the durable store if pub/sub drops the message.
+  if (handDone) {
+    await pub.publishHandCompleted({
+      handId,
+      tableId,
+      gameNo: result.game.gameNo,
+      lastSeq: newSeq,
+    });
+  }
+
   return {
     status: 'processed',
     tableId,
     step: result.game.handStep,
     stepName: getStepName(result.game.handStep),
     seq: newSeq,
-    handDone: result.game.handStep === GAME_HAND.RECORD_STATS_AND_NEW_HAND,
+    handDone,
   };
 }
 

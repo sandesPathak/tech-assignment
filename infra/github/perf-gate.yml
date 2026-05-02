@@ -1,0 +1,65 @@
+# perf-gate.yml — bot-swarm perf regression gate.
+#
+# Runs on every PR. Boots the gateway+worker locally on the runner with
+# ioredis-mock + in-memory hand-event store, fires 100 bots/60s through
+# the swarm runner, and asserts p95 action→delta latency stays under
+# the configured threshold.
+#
+# Located at `infra/github/perf-gate.yml` per the Phase 9 contract; copy
+# or symlink to `.github/workflows/` to actually wire it into Actions.
+#
+# NOTE: this workflow depends on `apps/botswarm/src/runner.js`. That file
+# is owned by Phase 8 and is present in the integrated branch. If it's
+# missing, `scripts/perf-gate.js` exits 0 with a TODO so this gate
+# doesn't block PRs before Phase 8 lands.
+
+name: Perf Gate (100 bots / 60s)
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      bots:
+        description: 'Number of bots'
+        default: '100'
+      duration:
+        description: 'Duration in seconds'
+        default: '60'
+      p95_budget_ms:
+        description: 'p95 latency budget (ms)'
+        default: '250'
+
+jobs:
+  perf-gate:
+    name: 100 bots / 60s
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GATEWAY_JWT_SECRET: perf-gate-secret-not-prod
+      LOG_LEVEL: warn
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install workspace deps
+        run: npm install
+
+      - name: Run preview perf scenario
+        run: |
+          node scripts/perf-gate.js \
+            --bots=${{ github.event.inputs.bots || '100' }} \
+            --duration=${{ github.event.inputs.duration || '60' }} \
+            --p95-budget-ms=${{ github.event.inputs.p95_budget_ms || '250' }} \
+            --out=perf-results.json
+
+      - name: Upload perf results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-results
+          path: perf-results.json

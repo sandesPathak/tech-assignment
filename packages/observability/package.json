@@ -1,0 +1,36 @@
+{
+  "name": "@hijack/observability",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared OpenTelemetry tracing + pino logging for Hijack Poker services.",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./tracing": "./src/tracing.js",
+    "./logger": "./src/logger.js",
+    "./shard-metrics": "./src/shard-metrics.js"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "pino": "^9.14.0"
+  },
+  "optionalDependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.55.0",
+    "@opentelemetry/resources": "^1.28.0",
+    "@opentelemetry/sdk-node": "^0.55.0",
+    "@opentelemetry/semantic-conventions": "^1.28.0"
+  },
+  "devDependencies": {
+    "ioredis-mock": "^8.9.0",
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/__tests__/**/*.test.js"
+    ]
+  }
+}

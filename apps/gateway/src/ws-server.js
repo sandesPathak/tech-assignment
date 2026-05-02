@@ -41,10 +41,16 @@ const {
   error: mkError,
   kicked: mkKicked,
 } = require('@hijack/protocol/messages');
+const { extractTraceContext, withSpan } = require('@hijack/observability/tracing');
+const {
+  isShardSaturated,
+  DEFAULT_SATURATION_PCT,
+} = require('@hijack/observability/shard-metrics');
 
 const HEARTBEAT_INTERVAL_MS = 30_000;
 const BACKPRESSURE_LIMIT = 100; // messages queued
 const MAX_INBOUND_BYTES = 64 * 1024;
+const SHARD_SATURATION_THRESHOLD = DEFAULT_SATURATION_PCT; // 80%
 
 /**
  * @typedef {object} GatewayOpts
@@ -70,6 +76,11 @@ class Gateway {
     this.log = opts.log || (() => {});
     this.heartbeatMs = opts.heartbeatMs || HEARTBEAT_INTERVAL_MS;
     this.backpressureLimit = opts.backpressureLimit || BACKPRESSURE_LIMIT;
+    // Map tableId → shardId for load-shed lookup. In production this is
+    // a cluster-wide ring/hash; in dev/test we accept either an explicit
+    // resolver or default to a single shard.
+    this.resolveShardId = opts.resolveShardId || (() => process.env.SHARD_ID || 'shard-0');
+    this.shardSaturationThreshold = opts.shardSaturationThreshold ?? SHARD_SATURATION_THRESHOLD;
     this.bus = new RedisBus({ subscriberFactory: opts.subscriberFactory });
     /** @type {Map<string, Set<object>>} sockets by tableId */
     this.byTable = new Map();
@@ -215,6 +226,32 @@ class Gateway {
     if (msg.tableId !== tableId) {
       return this._send(ws, mkError('table_mismatch', 'join tableId differs from URL'));
     }
+    // Load-shed: refuse joins when the target shard's mem_pct exceeds
+    // the saturation threshold (default 80%). Equivalent of an HTTP 503
+    // for WebSockets — we send `s2c.error { code: 'shard_saturated' }`
+    // and close the socket so the client can back off and retry.
+    try {
+      const shardId = this.resolveShardId(tableId);
+      const saturated = await isShardSaturated(
+        this.opts.redis,
+        shardId,
+        this.shardSaturationThreshold
+      );
+      if (saturated) {
+        this.log('shard_saturated_reject', {
+          tableId,
+          shardId,
+          userId: ws._hijack.userId,
+        });
+        this._send(ws, mkError('shard_saturated', 'shard at capacity, retry later', tableId));
+        try { ws.close(1013, 'shard_saturated'); } catch (_e) {}
+        return;
+      }
+    } catch (err) {
+      // Metrics lookup failure shouldn't take the gateway down — log and
+      // fall through to the resume path. The shard is presumed healthy.
+      this.log('shard_metrics_lookup_failed', { tableId, err: err.message });
+    }
     try {
       const plan = await planResume({
         redis: this.opts.redis,
@@ -273,6 +310,16 @@ class Gateway {
       return; // dropped duplicate / out-of-order republish
     }
     if (typeof msg.seq === 'number') this.tableSeq.set(tableId, msg.seq);
+
+    // Extract worker-side trace context from the published payload so we
+    // continue the same trace through the gateway → client fan-out. We
+    // expose it on the message for tests/instrumentation; the wire shape
+    // already includes `traceparent`.
+    const tc = extractTraceContext(msg);
+    if (tc) {
+      this.lastTraceId = tc.traceId;
+      this.log('broadcast_trace', { tableId, seq: msg.seq, traceId: tc.traceId });
+    }
 
     const set = this.byTable.get(tableId);
     if (!set) return;

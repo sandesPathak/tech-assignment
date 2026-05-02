@@ -6,4 +6,5 @@ module.exports = {
   ...require('./betting'),
   ...require('./players'),
   ...require('./pots'),
+  ...require('./money'),
 };

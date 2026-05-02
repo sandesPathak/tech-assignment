@@ -10,7 +10,9 @@
     "./cards": "./src/cards.js",
     "./betting": "./src/betting.js",
     "./players": "./src/players.js",
-    "./pots": "./src/pots.js"
+    "./pots": "./src/pots.js",
+    "./money": "./src/money.js",
+    "./src/money": "./src/money.js"
   },
   "scripts": {
     "test": "echo \"no engine-package tests yet\" && exit 0"

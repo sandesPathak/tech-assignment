@@ -1,0 +1,27 @@
+{
+  "name": "@hijack/worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hijack Poker single-table game loop worker (Fly.io shard).",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@hijack/engine": "*",
+    "@hijack/protocol": "*",
+    "ioredis": "^5.4.1",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "ioredis-mock": "^8.9.0",
+    "supertest": "^7.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/__tests__/**/*.test.js"]
+  }
+}

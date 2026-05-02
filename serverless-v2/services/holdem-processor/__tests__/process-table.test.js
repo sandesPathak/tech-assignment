@@ -24,7 +24,36 @@ const {
   payWinners,
   recordStatsAndNewHand,
 } = require('../lib/process-table');
-const { GAME_HAND, PLAYER_STATUS } = require('../shared/games/common/constants');
+const { GAME_HAND, PLAYER_STATUS, ACTION } = require('../shared/games/common/constants');
+
+/**
+ * Drive a betting round to completion by feeding the engine the
+ * acting seat's check-or-call action one tick at a time. The
+ * `bettingRound` API requires an explicit `playerAction` per call;
+ * passing nothing returns `awaiting: true`. This helper hides the
+ * polling loop so the full-hand-flow test below stays readable.
+ */
+function runBettingRound(state, round, max = 12) {
+  const { bettingRound: br } = require('../lib/process-table');
+  const startStep = state.game.handStep;
+  for (let i = 0; i < max; i++) {
+    // Has the round already advanced? (engine collapses last action
+    // and street-end into one tick).
+    if (state.game.handStep !== startStep) return state;
+    // Probe with no action — if the round has already ended (e.g. a
+    // street with all-ins) we stop immediately.
+    const probe = br(state.game, state.players, round);
+    if (!probe.awaiting) return probe;
+    state = probe;
+    const seat = state.game.move;
+    const player = state.players.find((p) => p.seat === seat);
+    const owed = state.game.currentBet - (player.bet || 0);
+    const action = owed > 0 ? ACTION.CALL : ACTION.CHECK;
+    const amount = owed > 0 ? state.game.currentBet : 0;
+    state = br(state.game, state.players, round, { seat, action, amount });
+  }
+  throw new Error(`betting round ${round} did not terminate`);
+}
 
 /**
  * Helper: create a minimal game state for testing.
@@ -330,25 +359,25 @@ describe('Process Table — Hand State Machine', () => {
       expect(state.game.handStep).toBe(GAME_HAND.PRE_FLOP_BETTING_ROUND);
       state.players.forEach((p) => expect(p.cards).toHaveLength(2));
 
-      state = bettingRound(state.game, state.players, 'preflop');
+      state = runBettingRound(state, 'preflop');
       expect(state.game.handStep).toBe(GAME_HAND.DEAL_FLOP);
 
       state = dealFlop(state.game, state.players);
       expect(state.game.communityCards).toHaveLength(3);
 
-      state = bettingRound(state.game, state.players, 'flop');
+      state = runBettingRound(state, 'flop');
       expect(state.game.handStep).toBe(GAME_HAND.DEAL_TURN);
 
       state = dealTurn(state.game, state.players);
       expect(state.game.communityCards).toHaveLength(4);
 
-      state = bettingRound(state.game, state.players, 'turn');
+      state = runBettingRound(state, 'turn');
       expect(state.game.handStep).toBe(GAME_HAND.DEAL_RIVER);
 
       state = dealRiver(state.game, state.players);
       expect(state.game.communityCards).toHaveLength(5);
 
-      state = bettingRound(state.game, state.players, 'river');
+      state = runBettingRound(state, 'river');
       expect(state.game.handStep).toBe(GAME_HAND.AFTER_RIVER_BETTING_ROUND);
 
       // After river -> find winners

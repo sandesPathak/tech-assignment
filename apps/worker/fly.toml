@@ -1,0 +1,46 @@
+# Fly.io config for one Hijack Poker worker shard.
+# Build context is the repo root so the Dockerfile can pull the
+# workspace packages (`packages/engine`, `packages/protocol`).
+#
+# Deploy from repo root:
+#   fly deploy --config apps/worker/fly.toml --dockerfile apps/worker/Dockerfile
+
+app = "hijack-worker"
+primary_region = "ord"
+
+[build]
+  dockerfile = "apps/worker/Dockerfile"
+
+[env]
+  PORT = "3001"
+  NODE_ENV = "production"
+
+[[services]]
+  internal_port = 3001
+  protocol = "tcp"
+  auto_stop_machines = false
+  auto_start_machines = false
+  min_machines_running = 1
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 500
+    soft_limit = 400
+
+  [[services.tcp_checks]]
+    interval = "10s"
+    timeout = "2s"
+
+# Memory budget: 256 MB / 50 KB per table = 5000 tables headroom;
+# realistic target ~370 tables/shard with engine + ioredis overhead.
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

@@ -16,6 +16,18 @@ const C2S = Object.freeze({
   LEAVE: 'c2s.leave',
   LOBBY_SUBSCRIBE: 'c2s.lobby_subscribe',
   LOBBY_UNSUBSCRIBE: 'c2s.lobby_unsubscribe',
+  HANDOFF_REDEEM: 'c2s.handoff_redeem',
+});
+
+// Reason strings used by the gateway when emitting `s2c.kicked`. The
+// protocol allows arbitrary strings so consumers stay forward-compat,
+// but these are the values Phase 6 (handoff) actually emits.
+const KICK_REASON = Object.freeze({
+  HANDOFF: 'handoff',
+  REPLACED: 'replaced_by_other_session',
+  BACKPRESSURE: 'backpressure_resync',
+  AUTH: 'auth',
+  TABLE_CLOSED: 'table_closed',
 });
 
 const S2C = Object.freeze({
@@ -64,8 +76,10 @@ function error(code, message, tableId) {
   return m;
 }
 
-function kicked(reason) {
-  return { t: S2C.KICKED, reason };
+function kicked(reason, opts = {}) {
+  const m = { t: S2C.KICKED, reason };
+  if (opts.replacedBy) m.replacedBy = opts.replacedBy;
+  return m;
 }
 
 // ─── Lobby builders ──────────────────────────────────────────────────────
@@ -93,6 +107,7 @@ module.exports = {
   C2S,
   S2C,
   ACTIONS,
+  KICK_REASON,
   isClientMessage,
   isServerMessage,
   snapshot,

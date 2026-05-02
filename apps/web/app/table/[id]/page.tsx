@@ -11,6 +11,7 @@ import {
 import { useTableStore, buildResumeJoin } from '@/lib/store'
 import { CoachPanel } from '@/components/CoachPanel'
 import { HandoffQR } from '@/components/HandoffQR'
+import { SeatPlate, type SeatPlayer } from '@/components/SeatPlate'
 
 interface JwtMint {
   token: string
@@ -128,9 +129,7 @@ export default function TablePage() {
             {store.desynced ? ' (resyncing…)' : ''}
           </div>
           {store.snapshot != null ? (
-            <pre className="mt-3 max-w-md text-[10px] text-left text-emerald-100/70 bg-black/40 p-2 rounded overflow-auto max-h-40">
-              {JSON.stringify(store.snapshot, null, 2).slice(0, 800)}
-            </pre>
+            <SeatGrid snapshot={store.snapshot} heroUserId={heroUserId} />
           ) : (
             <p className="mt-3 text-sm text-emerald-100/70">Waiting for snapshot…</p>
           )}
@@ -323,6 +322,41 @@ function summarise(payload: unknown): string {
   const p = payload as Record<string, unknown>
   const t = p['type'] || p['kind']
   return typeof t === 'string' ? t : JSON.stringify(p).slice(0, 80)
+}
+
+function SeatGrid({
+  snapshot,
+  heroUserId,
+}: {
+  snapshot: unknown
+  heroUserId: string
+}) {
+  const players: SeatPlayer[] = Array.isArray(
+    (snapshot as { players?: unknown })?.players
+  )
+    ? ((snapshot as { players: SeatPlayer[] }).players)
+    : []
+  if (players.length === 0) {
+    return (
+      <p className="mt-3 text-sm text-emerald-100/70">No players seated yet.</p>
+    )
+  }
+  return (
+    <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2 max-w-xl mx-auto">
+      {players.map((p) => {
+        const isHero =
+          !!heroUserId &&
+          (p.userId === heroUserId || p.guid === heroUserId)
+        return (
+          <SeatPlate
+            key={`seat-${p.seat ?? p.guid ?? Math.random()}`}
+            player={p}
+            hero={isHero}
+          />
+        )
+      })}
+    </div>
+  )
 }
 
 function bearerSubject(token: string | null): string {

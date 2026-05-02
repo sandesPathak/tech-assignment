@@ -155,6 +155,40 @@ const creator: StateCreator<TableStore> = (set, get) => ({
           if (kind === 'hand_completed' && typeof payload['handId'] === 'string') {
             set({ handCompletedId: payload['handId'] as string })
           }
+          // Phase 5 — `player_updated` carries a fresh display name +
+          // avatar for a userId; mutate any matching seat in the
+          // current snapshot so the table page re-renders without a
+          // server resync.
+          if (kind === 'player_updated' && typeof payload['userId'] === 'string') {
+            const snap = get().snapshot as
+              | { players?: Array<Record<string, unknown>> }
+              | null
+            if (snap && Array.isArray(snap.players)) {
+              const userId = payload['userId'] as string
+              const displayName = payload['displayName'] as string | undefined
+              const avatarId = payload['avatarId'] as string | undefined
+              let mutated = false
+              const nextPlayers = snap.players.map((p) => {
+                if (
+                  p &&
+                  (p['userId'] === userId ||
+                    p['guid'] === userId ||
+                    p['playerId'] === userId)
+                ) {
+                  mutated = true
+                  return {
+                    ...p,
+                    ...(displayName ? { username: displayName, displayName } : {}),
+                    ...(avatarId ? { avatarId } : {}),
+                  }
+                }
+                return p
+              })
+              if (mutated) {
+                set({ snapshot: { ...snap, players: nextPlayers } })
+              }
+            }
+          }
           // Optimistic confirmation — if the optimistic action matches
           // any payload describing the same seat's action, drop it.
           const shadow = get().optimisticShadow

@@ -125,6 +125,42 @@ describe('TableStore.applyServerMessage', () => {
     expect(useStore.getState().optimisticShadow).toBeNull()
   })
 
+  test('player_updated kind mutates the matching seat in the snapshot', () => {
+    const useStore = createTableStore()
+    useStore.getState().applyServerMessage({
+      t: 's2c.snapshot',
+      tableId: 't1',
+      seq: 0,
+      state: {
+        players: [
+          { seat: 1, guid: 'u_a', username: 'OldName', avatarId: '1', stack: 100 },
+          { seat: 2, guid: 'u_b', username: 'Bob', avatarId: '5', stack: 200 },
+        ],
+      },
+    } as S2CSnapshot)
+    useStore.getState().applyServerMessage({
+      t: 's2c.delta',
+      tableId: 't1',
+      seq: 1,
+      step: -1,
+      payload: {
+        kind: 'player_updated',
+        userId: 'u_a',
+        displayName: 'NewName',
+        avatarId: '7',
+      },
+    } as S2CDelta)
+    const snap = useStore.getState().snapshot as {
+      players: Array<{ seat: number; username?: string; displayName?: string; avatarId?: string }>
+    }
+    expect(snap.players[0].username).toBe('NewName')
+    expect(snap.players[0].displayName).toBe('NewName')
+    expect(snap.players[0].avatarId).toBe('7')
+    // Untouched seat preserved.
+    expect(snap.players[1].username).toBe('Bob')
+    expect(snap.players[1].avatarId).toBe('5')
+  })
+
   test('hand_completed kind sets handCompletedId for the coach panel', () => {
     const useStore = createTableStore()
     useStore.getState().applyServerMessage({

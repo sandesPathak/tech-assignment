@@ -9,6 +9,7 @@ import {
   type IGameSocket,
 } from '@/lib/game-socket'
 import type { LobbyTableRow, S2CLobbyState, S2CLobbyDelta } from '@hijack/protocol'
+import { Avatar } from '@/components/Avatar'
 
 interface StakeMeta {
   id: string
@@ -147,6 +148,11 @@ export default function LobbyPage() {
               <div className="text-xs text-neutral-400">
                 Seats {t.maxSeats - t.openSeats}/{t.maxSeats} · {t.smallBlind}/{t.bigBlind}
               </div>
+              <SeatsTakenStrip
+                tableId={t.tableId}
+                taken={t.maxSeats - t.openSeats}
+                max={t.maxSeats}
+              />
             </div>
             <Link
               href={`/table/${encodeURIComponent(t.tableId)}`}
@@ -180,6 +186,35 @@ function StatusBanner({
     )
   }
   return <p className="text-xs text-emerald-400" role="status">Live</p>
+}
+
+function SeatsTakenStrip({
+  tableId,
+  taken,
+  max,
+}: {
+  tableId: string
+  taken: number
+  max: number
+}) {
+  if (taken <= 0) return null
+  // Deterministic avatar ids from the tableId so the same table renders
+  // the same strip across clients/sessions. v1 lobby protocol doesn't
+  // ship per-seat userIds; Phase 6+ may extend it.
+  const ids: string[] = []
+  let h = 0
+  for (let i = 0; i < tableId.length; i += 1) h = (h * 31 + tableId.charCodeAt(i)) >>> 0
+  for (let i = 0; i < Math.min(taken, max); i += 1) {
+    const slot = ((h + i * 17) % 24) + 1
+    ids.push(String(slot))
+  }
+  return (
+    <div className="mt-1 flex items-center gap-1" aria-label={`${taken} seated`}>
+      {ids.map((id, i) => (
+        <Avatar key={`${tableId}-${i}`} avatarId={id} size={20} className="border-neutral-700" />
+      ))}
+    </div>
+  )
 }
 
 function applyLobbyDelta(

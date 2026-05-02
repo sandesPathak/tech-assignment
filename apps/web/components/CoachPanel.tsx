@@ -17,6 +17,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '@/lib/api'
+import { Avatar } from './Avatar'
+import { useTableStore } from '@/lib/store'
 
 interface CoachDecision {
   street: string
@@ -59,6 +61,28 @@ export function CoachPanel({
 
   const enabled = useMemo(() => isCoachEnabled(), [])
 
+  // Pull the hero's seat metadata out of the current snapshot so the
+  // coach panel header can render their avatar + display name.
+  const heroMeta = useTableStore((s) => {
+    const snap = s.snapshot as
+      | { players?: Array<Record<string, unknown>> }
+      | null
+    if (!snap || !Array.isArray(snap.players)) return null
+    const found = snap.players.find(
+      (p) =>
+        p &&
+        (p['userId'] === hero || p['guid'] === hero || p['playerId'] === hero)
+    )
+    if (!found) return null
+    return {
+      avatarId: (found['avatarId'] as string) || null,
+      displayName:
+        (found['displayName'] as string) ||
+        (found['username'] as string) ||
+        '',
+    }
+  })
+
   useEffect(() => {
     if (!open || !handId || !hero || !enabled) return
     let cancelled = false
@@ -97,7 +121,19 @@ export function CoachPanel({
       aria-label="Coach analysis"
     >
       <header className="flex items-center justify-between px-4 py-2 border-b border-neutral-800 sticky top-0 bg-neutral-950">
-        <h2 className="text-sm font-semibold">Coach</h2>
+        <div className="flex items-center gap-2">
+          {heroMeta && (
+            <Avatar avatarId={heroMeta.avatarId} size={28} alt="You" />
+          )}
+          <h2 className="text-sm font-semibold">
+            Coach
+            {heroMeta?.displayName && (
+              <span className="ml-2 text-xs font-normal text-neutral-400">
+                for {heroMeta.displayName}
+              </span>
+            )}
+          </h2>
+        </div>
         <div className="flex gap-2">
           {onPin && (
             <button

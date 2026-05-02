@@ -11,6 +11,7 @@
 const Redis = require('ioredis');
 const { Gateway } = require('./ws-server');
 const { attachCoachApi } = require('./coach-api');
+const { attachProfileBus } = require('./profile-bus');
 const { StateStore } = require('@hijack/worker/src/state-store');
 const { createHandEventStore } = require('@hijack/worker/src/hand-event-store');
 const { initTracing, shutdownTracing } = require('@hijack/observability/tracing');
@@ -40,6 +41,10 @@ async function main() {
   // — never modifies existing routes.
   try { await attachCoachApi(gateway); }
   catch (err) { log.warn({ err: err.message }, 'coach_api_attach_failed'); }
+  // Phase 5: subscribe to `profile:updated` and re-broadcast as
+  // `s2c.delta` with payload.kind='player_updated' to seated tables.
+  try { await attachProfileBus(gateway); }
+  catch (err) { log.warn({ err: err.message }, 'profile_bus_attach_failed'); }
   log.info({ port }, 'gateway_listening');
 
   const shutdown = async (signal) => {

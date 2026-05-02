@@ -1,0 +1,126 @@
+{
+  "count": 24,
+  "style": "bottts-neutral",
+  "avatars": [
+    {
+      "id": "1",
+      "seed": "hijack-1",
+      "path": "/avatars/1.svg"
+    },
+    {
+      "id": "2",
+      "seed": "hijack-2",
+      "path": "/avatars/2.svg"
+    },
+    {
+      "id": "3",
+      "seed": "hijack-3",
+      "path": "/avatars/3.svg"
+    },
+    {
+      "id": "4",
+      "seed": "hijack-4",
+      "path": "/avatars/4.svg"
+    },
+    {
+      "id": "5",
+      "seed": "hijack-5",
+      "path": "/avatars/5.svg"
+    },
+    {
+      "id": "6",
+      "seed": "hijack-6",
+      "path": "/avatars/6.svg"
+    },
+    {
+      "id": "7",
+      "seed": "hijack-7",
+      "path": "/avatars/7.svg"
+    },
+    {
+      "id": "8",
+      "seed": "hijack-8",
+      "path": "/avatars/8.svg"
+    },
+    {
+      "id": "9",
+      "seed": "hijack-9",
+      "path": "/avatars/9.svg"
+    },
+    {
+      "id": "10",
+      "seed": "hijack-10",
+      "path": "/avatars/10.svg"
+    },
+    {
+      "id": "11",
+      "seed": "hijack-11",
+      "path": "/avatars/11.svg"
+    },
+    {
+      "id": "12",
+      "seed": "hijack-12",
+      "path": "/avatars/12.svg"
+    },
+    {
+      "id": "13",
+      "seed": "hijack-13",
+      "path": "/avatars/13.svg"
+    },
+    {
+      "id": "14",
+      "seed": "hijack-14",
+      "path": "/avatars/14.svg"
+    },
+    {
+      "id": "15",
+      "seed": "hijack-15",
+      "path": "/avatars/15.svg"
+    },
+    {
+      "id": "16",
+      "seed": "hijack-16",
+      "path": "/avatars/16.svg"
+    },
+    {
+      "id": "17",
+      "seed": "hijack-17",
+      "path": "/avatars/17.svg"
+    },
+    {
+      "id": "18",
+      "seed": "hijack-18",
+      "path": "/avatars/18.svg"
+    },
+    {
+      "id": "19",
+      "seed": "hijack-19",
+      "path": "/avatars/19.svg"
+    },
+    {
+      "id": "20",
+      "seed": "hijack-20",
+      "path": "/avatars/20.svg"
+    },
+    {
+      "id": "21",
+      "seed": "hijack-21",
+      "path": "/avatars/21.svg"
+    },
+    {
+      "id": "22",
+      "seed": "hijack-22",
+      "path": "/avatars/22.svg"
+    },
+    {
+      "id": "23",
+      "seed": "hijack-23",
+      "path": "/avatars/23.svg"
+    },
+    {
+      "id": "24",
+      "seed": "hijack-24",
+      "path": "/avatars/24.svg"
+    }
+  ]
+}

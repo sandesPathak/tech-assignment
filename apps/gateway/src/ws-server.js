@@ -34,6 +34,10 @@ const {
 const { RedisBus } = require('./redis-bus');
 const { planResume } = require('./resume');
 const {
+  createHandoffHandlers,
+  shouldDeliverToSpectator,
+} = require('./handoff');
+const {
   C2S,
   S2C,
   isClientMessage,
@@ -82,13 +86,33 @@ class Gateway {
 
   async start({ port = 0 } = {}) {
     await this.bus.start();
+    // Build the handoff HTTP handlers. They close over `this` so /redeem
+    // can find and downgrade the prior socket bound to (userId, tableId,
+    // seat). See `apps/gateway/src/handoff.js`.
+    this.handoff = createHandoffHandlers({
+      redis: this.opts.redis,
+      gateway: this,
+      secret: this.opts.secret,
+      log: this.log,
+    });
     // Bus → per-table fan-out. We register a single subscriber per table
     // when its first socket connects.
-    this.httpServer = http.createServer((req, res) => {
+    this.httpServer = http.createServer(async (req, res) => {
       // Health endpoint — useful for Fly.io and the integration test.
       if (req.url === '/health') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ service: 'hijack-gateway', status: 'ok' }));
+        return;
+      }
+      // Handoff REST endpoints.
+      try {
+        if (await this.handoff.dispatch(req, res)) return;
+      } catch (err) {
+        this.log('handoff_handler_error', { err: err.message });
+        if (!res.headersSent) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'internal' }));
+        }
         return;
       }
       res.writeHead(404);
@@ -246,6 +270,9 @@ class Gateway {
     if (!ws._hijack.joined) {
       return this._send(ws, mkError('not_joined', 'send c2s.join first'));
     }
+    if (ws._hijack.spectator) {
+      return this._send(ws, mkError('spectator', 'socket downgraded after handoff'));
+    }
     if (!this.opts.onAction) {
       // Phase 2 doesn't define gateway → worker RPC. For now, simply
       // ack — the worker test harness drives ticks directly. The hook
@@ -277,8 +304,42 @@ class Gateway {
     const set = this.byTable.get(tableId);
     if (!set) return;
     for (const ws of set) {
+      // Spectator-mode sockets (post-handoff) get a filtered stream.
+      // shouldDeliverToSpectator returns true for public events; we drop
+      // any frame that may reveal hole cards for the seat the spectator
+      // used to occupy.
+      if (ws._hijack && ws._hijack.spectator) {
+        if (!shouldDeliverToSpectator(msg, { seat: ws._hijack.seat })) continue;
+      }
       this._send(ws, msg);
     }
+  }
+
+  /**
+   * Mark every socket bound to (userId, tableId, seat) on this gateway as
+   * a spectator and notify them with `s2c.kicked` / reason `handoff`.
+   * Called by the handoff `redeem` handler. Returns the number of sockets
+   * downgraded (0 if the user wasn't connected here).
+   */
+  kickForHandoff({ userId, tableId, seat, newSessionId }) {
+    const set = this.byTable.get(String(tableId));
+    if (!set) return 0;
+    let count = 0;
+    for (const ws of set) {
+      const meta = ws._hijack;
+      if (!meta) continue;
+      if (meta.spectator) continue;
+      if (String(meta.userId) !== String(userId)) continue;
+      if (seat != null && meta.seat != null && Number(meta.seat) !== Number(seat)) continue;
+      meta.spectator = true;
+      meta.replacedBy = newSessionId;
+      // Notify the client so it can render the "moved to phone" screen.
+      try {
+        this._send(ws, mkKicked('handoff'));
+      } catch (_e) { /* best effort */ }
+      count += 1;
+    }
+    return count;
   }
 
   /**

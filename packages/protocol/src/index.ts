@@ -56,7 +56,24 @@ export interface C2SLeave {
   tableId: string
 }
 
-export type ClientMessage = C2SJoin | C2SAction | C2SLeave
+/** Optional WS-side hello when the client is already proving identity via
+ *  a JWT minted from `POST /handoff/redeem`. The actual token swap is
+ *  done over REST (so the token never travels in WS frames a third party
+ *  could observe via `wscat` etc.) — this frame just lets the gateway
+ *  treat the connection as a handoff continuation rather than a fresh
+ *  join, which matters when reporting kick reasons in observability.
+ *
+ *  The gateway will accept a normal `c2s.join` even if the client skips
+ *  this — the JWT alone is sufficient. Provided here so the protocol
+ *  package is the canonical source for every wire shape Phase 6 uses. */
+export interface C2SHandoffRedeem {
+  t: 'c2s.handoff_redeem'
+  tableId: string
+  /** Echo of the sessionId returned from `POST /handoff/redeem`. */
+  sessionId: string
+}
+
+export type ClientMessage = C2SJoin | C2SAction | C2SLeave | C2SHandoffRedeem
 
 // ─── Server -> Client (s2c) ────────────────────────────────────────────────
 
@@ -88,11 +105,30 @@ export interface S2CError {
   message: string
 }
 
-/** Forcible disconnect — auth failure, table closed, replaced by another
- *  session, etc. Gateway sends this then closes. */
+/** Forcible disconnect or seat eviction. The gateway sends this then
+ *  either closes the socket (auth failure, table closed) or — in the
+ *  handoff case — leaves the socket open in spectator mode so the old
+ *  device can continue rendering the public table state.
+ *
+ *  Reasons in use:
+ *    - `'handoff'`               another device redeemed a handoff token.
+ *    - `'replaced_by_other_session'`  same user reconnected on the same
+ *                                   device pre-handoff.
+ *    - `'backpressure_resync'`   slow consumer; reconnect to catch up.
+ *    - `'auth'` / `'table_closed'` etc.
+ */
 export interface S2CKicked {
   t: 's2c.kicked'
-  reason: string
+  reason:
+    | 'handoff'
+    | 'replaced_by_other_session'
+    | 'backpressure_resync'
+    | 'auth'
+    | 'table_closed'
+    | string
+  /** Optional metadata — e.g. the new sessionId on a handoff so the
+   *  client can correlate with its own redeem call. */
+  replacedBy?: string
 }
 
 export type ServerMessage = S2CSnapshot | S2CDelta | S2CError | S2CKicked
@@ -102,7 +138,34 @@ export type ServerMessage = S2CSnapshot | S2CDelta | S2CError | S2CKicked
 export function isClientMessage(x: unknown): x is ClientMessage {
   if (!x || typeof x !== 'object') return false
   const t = (x as { t?: unknown }).t
-  return t === 'c2s.join' || t === 'c2s.action' || t === 'c2s.leave'
+  return (
+    t === 'c2s.join' ||
+    t === 'c2s.action' ||
+    t === 'c2s.leave' ||
+    t === 'c2s.handoff_redeem'
+  )
+}
+
+// ─── REST shapes for /handoff/issue + /handoff/redeem ─────────────────
+
+/** Response of `POST /handoff/issue` — a short-lived single-use token
+ *  that authorises a different device to claim the same seat. The token
+ *  is opaque (256-bit, base64url) and lives in Redis under
+ *  `handoff:{token}` with a 60s TTL. */
+export interface HandoffToken {
+  token: string
+  /** Seconds until the token expires server-side. */
+  expiresIn: number
+}
+
+/** Response of `POST /handoff/redeem`. The new device uses `jwt` in the
+ *  existing `?token=` WS upgrade flow. */
+export interface HandoffRedemption {
+  jwt: string
+  userId: string
+  tableId: string
+  seat: number | null
+  sessionId: string
 }
 
 export function isServerMessage(x: unknown): x is ServerMessage {

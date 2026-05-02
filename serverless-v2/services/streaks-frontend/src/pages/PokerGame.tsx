@@ -17,6 +17,8 @@ import { PHASE_LABELS } from '../types/poker.types'
 import { getResponsibleGaming } from '../api/streaks.api'
 import { notifyHandCompleted } from '../api/poker.api'
 
+const GATEWAY_HTTP = (import.meta.env.VITE_GATEWAY_HTTP_URL as string) || 'http://localhost:3002'
+
 function PokerGame() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -40,6 +42,31 @@ function PokerGame() {
   const [winnerName, setWinnerName] = useState('')
   const [selfExcludedUntil, setSelfExcludedUntil] = useState<string | null>(null)
   const [exclusionChecked, setExclusionChecked] = useState(false)
+
+  // Auto-fill empty seats with bots if the human is seated alone.
+  // Fires once per (tableId, stake) per page-mount, ~2.5s after first snapshot
+  // so a real human/bot already mid-join has time to land first.
+  const filledRef = useRef(false)
+  useEffect(() => {
+    if (spectate) return
+    if (filledRef.current) return
+    if (!tableState) return
+    if (!requestedTableId) return
+    const tableId = requestedTableId
+    const t = setTimeout(() => {
+      const seated = tableState.players.filter((p) => p.seat != null).length
+      if (seated > 1) return
+      filledRef.current = true
+      const maxSeats = tableState.game.maxSeats || 6
+      const want = Math.min(8, Math.max(2, maxSeats - 1))
+      fetch(`${GATEWAY_HTTP}/admin/fill-table`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ tableId, stake, count: want }),
+      }).catch(() => { /* non-critical */ })
+    }, 2500)
+    return () => clearTimeout(t)
+  }, [tableState, requestedTableId, stake, spectate])
 
   useEffect(() => {
     getResponsibleGaming()
@@ -168,7 +195,7 @@ function PokerGame() {
       <WinCelebration active={winCelebrating} amount={winAmount} winnerName={winnerName} onComplete={() => setWinCelebrating(false)} />
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
         <Box sx={{ px: { xs: 1, md: 2 }, py: 1, display: 'flex', alignItems: 'center', bgcolor: '#0d1219', borderBottom: '1px solid #1e2a3a', flexShrink: 0 }}>
-          <IconButton onClick={() => navigate('/')} sx={{ color: '#90CAF9', mr: 1 }} size="small">
+          <IconButton onClick={() => navigate('/lobby')} sx={{ color: '#90CAF9', mr: 1 }} size="small">
             <ArrowBackIcon fontSize="small" />
           </IconButton>
           <Box flex={1} display="flex" justifyContent="center">

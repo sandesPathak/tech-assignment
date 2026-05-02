@@ -8,7 +8,7 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import PersonIcon from '@mui/icons-material/Person';
 import ShareIcon from '@mui/icons-material/Share';
 import VipBadge from './VipBadge';
-import PokerLoadingOverlay from './PokerLoadingOverlay';
+import { useLoadingOverlay } from '../context/LoadingOverlayContext';
 import { useState } from 'react';
 
 interface DashboardHeaderProps {
@@ -28,21 +28,15 @@ interface DashboardHeaderProps {
 
 function DashboardHeader({ tier, data, user, todayCheckedIn, isExcluded, selfExcludedUntil, onCheckIn, onShareOpen, signOut }: DashboardHeaderProps) {
   const navigate = useNavigate();
+  const { play: playLoadingOverlay } = useLoadingOverlay();
   const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
-  const [loaderOpen, setLoaderOpen] = useState(false);
 
   const handlePlayPoker = () => {
     if (isExcluded) return;
-    setLoaderOpen(true);
+    playLoadingOverlay('Taking your seat', '/lobby');
   };
 
   return (
-    <>
-    <PokerLoadingOverlay
-      open={loaderOpen}
-      status="Taking your seat"
-      onComplete={() => navigate('/lobby')}
-    />
     <Box
       display="flex"
       alignItems={{ xs: 'flex-start', sm: 'center' }}
@@ -230,7 +224,6 @@ function DashboardHeader({ tier, data, user, todayCheckedIn, isExcluded, selfExc
         </Menu>
       </Box>
     </Box>
-    </>
   );
 }
 

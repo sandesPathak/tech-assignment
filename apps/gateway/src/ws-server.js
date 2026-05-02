@@ -200,6 +200,9 @@ class Gateway {
       if (req.method === 'POST' && urlPath === '/admin/swarm/stop') {
         return this._handleSwarmStop(req, res);
       }
+      if (req.method === 'POST' && urlPath === '/admin/fill-table') {
+        return this._handleFillTable(req, res);
+      }
       if (req.method === 'GET' && urlPath === '/admin/stats') {
         return this._handleAdminStats(req, res);
       }
@@ -249,6 +252,47 @@ class Gateway {
     this._swarmProc = child;
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true, pid: child.pid, total, ramp }));
+  }
+
+  async _handleFillTable(req, res) {
+    let body = '';
+    for await (const chunk of req) body += chunk;
+    let parsed;
+    try { parsed = body ? JSON.parse(body) : {}; }
+    catch { res.writeHead(400, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ error: 'bad_json' })); }
+    const tableId = String(parsed.tableId || '');
+    const stake = String(parsed.stake || '');
+    const count = Math.max(1, Math.min(8, Number(parsed.count) || 4));
+    if (!tableId || !stake) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'missing_table_or_stake' }));
+    }
+    // de-dupe: don't relaunch a fill for the same table within 30s
+    this._fillCache = this._fillCache || new Map();
+    const last = this._fillCache.get(tableId) || 0;
+    if (Date.now() - last < 30_000) {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ ok: true, deduped: true }));
+    }
+    this._fillCache.set(tableId, Date.now());
+    // eslint-disable-next-line global-require
+    const path = require('path');
+    // eslint-disable-next-line global-require
+    const { spawn } = require('child_process');
+    const swarmJs = path.resolve(__dirname, '../../botswarm/src/swarm.js');
+    const idPrefix = `bot-fill-${tableId.slice(0, 8)}`;
+    const child = spawn(
+      process.execPath,
+      [swarmJs, `--total=${count}`, `--ramp=${count}`, `--tableId=${tableId}`, `--stake=${stake}`, `--idPrefix=${idPrefix}`],
+      {
+        env: { ...process.env, GATEWAY_HTTP_URL: 'http://127.0.0.1:3002', HIJACK_GATEWAY_URL: 'ws://127.0.0.1:3002' },
+        stdio: 'ignore',
+        detached: true,
+      }
+    );
+    child.unref();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true, pid: child.pid, count, tableId, stake }));
   }
 
   async _handleSwarmStop(req, res) {

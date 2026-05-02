@@ -20,12 +20,25 @@ function arg(name, def) {
 const TARGET = Number(arg('total', 10000));
 const RAMP_PER_SEC = Number(arg('ramp', 50));
 const ID_PREFIX = arg('idPrefix', 'bot-swarm');
+const TARGET_TABLE_ID = arg('tableId', '');
+const TARGET_STAKE = arg('stake', '');
 
 let connected = 0;
 let lastReport = Date.now();
 const conns = [];
 
 async function pickOpenSeat() {
+  if (TARGET_TABLE_ID && TARGET_STAKE) {
+    try {
+      const r = await fetch(`${HTTP}/lobby/${TARGET_STAKE}`);
+      if (r.ok) {
+        const body = await r.json();
+        const t = (body.tables || []).find((x) => x.tableId === TARGET_TABLE_ID && x.openSeats > 0);
+        if (t) return { stake: TARGET_STAKE, tableId: t.tableId, maxSeats: t.maxSeats };
+      }
+    } catch (_e) {}
+    return null;
+  }
   // round-robin across stakes
   for (const stake of STAKES) {
     try {

@@ -4,6 +4,12 @@ import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
 interface Props {
   open: boolean
   onComplete?: () => void
+  /**
+   * Fires when the overlay starts fading out (~350ms before onComplete).
+   * Use this to trigger navigation so the destination route mounts BEHIND
+   * the fading overlay — that way the prior page never flashes through.
+   */
+  onPreload?: () => void
   status?: string
   /** Total ms before onComplete fires. Default 2000. */
   duration?: number
@@ -373,6 +379,7 @@ function generateCash(): CashPiece[] {
 export default function PokerLoadingOverlay({
   open,
   onComplete,
+  onPreload,
   status = 'Taking your seat',
   duration = 2000,
 }: Props) {
@@ -380,6 +387,8 @@ export default function PokerLoadingOverlay({
   const counterRef = useRef<HTMLDivElement | null>(null)
   const completeRef = useRef(onComplete)
   completeRef.current = onComplete
+  const preloadRef = useRef(onPreload)
+  preloadRef.current = onPreload
 
   // Generate randomized particles only once per open cycle so they stay stable
   // across re-renders during the 2s lifetime.
@@ -410,7 +419,10 @@ export default function PokerLoadingOverlay({
     }
     raf = requestAnimationFrame(tick)
 
-    const closeAt = setTimeout(() => setClosing(true), Math.max(0, duration - 350))
+    const closeAt = setTimeout(() => {
+      setClosing(true)
+      preloadRef.current?.()
+    }, Math.max(0, duration - 350))
     const completeAt = setTimeout(() => completeRef.current?.(), duration)
     return () => {
       cancelAnimationFrame(raf)

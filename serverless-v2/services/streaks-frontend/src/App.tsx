@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
 import { useAuth } from './hooks/useAuth';
 import { ToastProvider } from './context/ToastContext';
+import { LoadingOverlayProvider } from './context/LoadingOverlayContext';
 import Dashboard from './pages/Dashboard';
 import PokerGame from './pages/PokerGame';
 import PokerLobby from './pages/PokerLobby';
@@ -25,22 +26,24 @@ function App() {
   return (
     <ToastProvider>
       <BrowserRouter>
-        <Routes>
-          {user ? (
-            <>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/play" element={<PokerGame />} />
-              <Route path="/lobby" element={<PokerLobby />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/players" element={<AdminPlayerHistory />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </>
-          ) : (
-            <>
-              <Route path="*" element={<Login />} />
-            </>
-          )}
-        </Routes>
+        <LoadingOverlayProvider>
+          <Routes>
+            {user ? (
+              <>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/play" element={<PokerGame />} />
+                <Route path="/lobby" element={<PokerLobby />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/players" element={<AdminPlayerHistory />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </>
+            ) : (
+              <>
+                <Route path="*" element={<Login />} />
+              </>
+            )}
+          </Routes>
+        </LoadingOverlayProvider>
       </BrowserRouter>
     </ToastProvider>
   );

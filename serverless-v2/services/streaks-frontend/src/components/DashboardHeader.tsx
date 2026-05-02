@@ -8,6 +8,7 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import PersonIcon from '@mui/icons-material/Person';
 import ShareIcon from '@mui/icons-material/Share';
 import VipBadge from './VipBadge';
+import PokerLoadingOverlay from './PokerLoadingOverlay';
 import { useState } from 'react';
 
 interface DashboardHeaderProps {
@@ -28,8 +29,20 @@ interface DashboardHeaderProps {
 function DashboardHeader({ tier, data, user, todayCheckedIn, isExcluded, selfExcludedUntil, onCheckIn, onShareOpen, signOut }: DashboardHeaderProps) {
   const navigate = useNavigate();
   const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
+  const [loaderOpen, setLoaderOpen] = useState(false);
+
+  const handlePlayPoker = () => {
+    if (isExcluded) return;
+    setLoaderOpen(true);
+  };
 
   return (
+    <>
+    <PokerLoadingOverlay
+      open={loaderOpen}
+      status="Taking your seat"
+      onComplete={() => navigate('/lobby')}
+    />
     <Box
       display="flex"
       alignItems={{ xs: 'flex-start', sm: 'center' }}
@@ -86,7 +99,7 @@ function DashboardHeader({ tier, data, user, todayCheckedIn, isExcluded, selfExc
             <Button
               variant="contained"
               startIcon={<SportsEsportsIcon />}
-              onClick={() => navigate('/play')}
+              onClick={handlePlayPoker}
               disabled={!!isExcluded}
               sx={{
                 background: 'linear-gradient(135deg, #1B5E20, #2E7D32)',
@@ -206,6 +219,7 @@ function DashboardHeader({ tier, data, user, todayCheckedIn, isExcluded, selfExc
         </Menu>
       </Box>
     </Box>
+    </>
   );
 }
 

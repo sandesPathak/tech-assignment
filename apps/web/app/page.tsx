@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { api } from '@/lib/api'
 
 export default function LandingPage() {
@@ -9,16 +9,16 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const autoTriedRef = useRef(false)
 
-  async function signIn(e: React.FormEvent) {
-    e.preventDefault()
-    if (!username.trim()) return
+  async function doSignIn(name: string) {
     setLoading(true)
     setError(null)
     try {
       await api('/api/auth', {
         method: 'POST',
-        body: JSON.stringify({ username: username.trim() }),
+        body: JSON.stringify({ username: name }),
       })
       router.push('/lobby')
     } catch (err) {
@@ -26,6 +26,24 @@ export default function LandingPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Auto-sign-in when embedded by streaks `/play` (passes ?username=…).
+  // Runs once; user can still edit and resubmit if it fails.
+  useEffect(() => {
+    if (autoTriedRef.current) return
+    const hint = searchParams?.get('username')?.trim()
+    if (hint) {
+      autoTriedRef.current = true
+      setUsername(hint)
+      doSignIn(hint)
+    }
+  }, [searchParams])
+
+  async function signIn(e: React.FormEvent) {
+    e.preventDefault()
+    if (!username.trim()) return
+    await doSignIn(username.trim())
   }
 
   return (

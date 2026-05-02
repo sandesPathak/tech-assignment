@@ -270,6 +270,25 @@ function payWinners(game, players) {
 
 function recordStatsAndNewHand(game, players) {
   game.status = 'completed';
+  // Auto-rotate to a fresh hand if there are still ≥2 active players.
+  // Without this the table sits at step 15 forever after the first hand.
+  const stillIn = (players || []).filter(
+    (p) => p.status !== PLAYER_STATUS.SITTING_OUT
+       && p.status !== PLAYER_STATUS.BUSTED
+       && p.status !== PLAYER_STATUS.EXIT_TABLE
+       && Number(p.stack) > 0
+  );
+  if (stillIn.length >= 2) {
+    game.gameNo = (Number(game.gameNo) || 0) + 1;
+    game.handStep = GAME_HAND.GAME_PREP;
+    game.status = 'in_progress';
+    game.winners = [];
+    game.move = 0;
+    game.currentBet = 0;
+    game.pot = 0;
+    game.communityCards = [];
+    game.sidePots = [];
+  }
   return { game, players };
 }
 

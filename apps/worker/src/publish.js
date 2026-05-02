@@ -70,7 +70,7 @@ class Publisher {
    * Best-effort like `publishTick` — durable record is in Neon, so the
    * coach can be replayed off a cron if Redis pub/sub drops a message.
    *
-   * @param {object} ev { handId, tableId, lastSeq, gameNo }
+   * @param {object} ev { handId, tableId, lastSeq, gameNo, players? }
    */
   async publishHandCompleted(ev) {
     const msg = {
@@ -83,6 +83,9 @@ class Publisher {
       fromSeq: 1,
       toSeq: ev.lastSeq + 1,
       completedAt: new Date().toISOString(),
+      // seat→playerId snapshot, consumed by apps/streaks-bridge to update
+      // each human player's streak. Bots (`bot-*`) are filtered downstream.
+      players: Array.isArray(ev.players) ? ev.players : [],
     };
     injectTraceContext(msg);
     try {

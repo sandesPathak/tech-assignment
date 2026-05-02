@@ -70,7 +70,13 @@ async function _processTableInner(stateStore, tableId, playerAction, publisher) 
     payload,
   });
 
-  const handDone = result.game.handStep === GAME_HAND.RECORD_STATS_AND_NEW_HAND;
+  // Hand is done when we just executed step 15 (RECORD_STATS_AND_NEW_HAND).
+  // The engine auto-rotates back to GAME_PREP within the same advance, so
+  // we detect "before" rather than "after" — `result.game.handStep` may
+  // already be 0 (GAME_PREP) for the next hand.
+  const handDone =
+    before === GAME_HAND.RECORD_STATS_AND_NEW_HAND
+    || result.game.handStep === GAME_HAND.RECORD_STATS_AND_NEW_HAND;
 
   // Phase 7: notify the coach worker. Fired exactly once per hand,
   // after step 16 (RECORD_STATS_AND_NEW_HAND). The coach reads the
@@ -78,11 +84,15 @@ async function _processTableInner(stateStore, tableId, playerAction, publisher) 
   // EV analysis. Best-effort like `publishTick` — coach can be
   // replayed off the durable store if pub/sub drops the message.
   if (handDone) {
+    const seatedPlayers = (result.players || [])
+      .filter((p) => p && p.playerId)
+      .map((p) => ({ seat: p.seat, playerId: String(p.playerId) }));
     await pub.publishHandCompleted({
       handId,
       tableId,
       gameNo: result.game.gameNo,
       lastSeq: newSeq,
+      players: seatedPlayers,
     });
   }
 
@@ -97,6 +107,9 @@ async function _processTableInner(stateStore, tableId, playerAction, publisher) 
 }
 
 function makePayload(stepBefore, result) {
+  // Fat delta: ship the full game + players each tick so clients can
+  // render without an out-of-band fetch. ~1-2 KB on the wire is fine
+  // for a single-shard demo; production would split this.
   return {
     from: stepBefore,
     to: result.game.handStep,
@@ -105,6 +118,8 @@ function makePayload(stepBefore, result) {
     move: result.game.move,
     community: result.game.communityCards,
     winners: result.game.winners,
+    game: result.game,
+    players: result.players,
   };
 }
 

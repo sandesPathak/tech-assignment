@@ -5,6 +5,8 @@ dist/
 .build/
 coverage/
 *.log
+.logs/
+*.pid
 .DS_Store
 .claude/
 docs/

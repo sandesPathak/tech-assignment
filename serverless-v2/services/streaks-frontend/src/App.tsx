@@ -4,6 +4,7 @@ import { useAuth } from './hooks/useAuth';
 import { ToastProvider } from './context/ToastContext';
 import Dashboard from './pages/Dashboard';
 import PokerGame from './pages/PokerGame';
+import PokerLobby from './pages/PokerLobby';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminPlayerHistory from './pages/AdminPlayerHistory';
 import Login from './pages/Login';
@@ -29,6 +30,7 @@ function App() {
             <>
               <Route path="/" element={<Dashboard />} />
               <Route path="/play" element={<PokerGame />} />
+              <Route path="/lobby" element={<PokerLobby />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/players" element={<AdminPlayerHistory />} />
               <Route path="*" element={<Navigate to="/" replace />} />

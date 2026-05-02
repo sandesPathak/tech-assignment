@@ -163,6 +163,18 @@ class Gateway {
    */
   async _handleHttp(req, res) {
     try {
+      const origin = req.headers.origin;
+      if (origin) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, traceparent');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.setHeader('Vary', 'Origin');
+      }
+      if (req.method === 'OPTIONS') {
+        res.writeHead(204);
+        return res.end();
+      }
       const urlPath = (req.url || '/').split('?')[0];
       if (req.method === 'GET' && urlPath === '/health') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -178,6 +190,18 @@ class Gateway {
       }
       if (req.method === 'POST' && urlPath === '/seat-claim') {
         return this._handleSeatClaim(req, res);
+      }
+      if (req.method === 'POST' && urlPath === '/spectator-token') {
+        return this._handleSpectatorToken(req, res);
+      }
+      if (req.method === 'POST' && urlPath === '/admin/swarm') {
+        return this._handleSwarmSpawn(req, res);
+      }
+      if (req.method === 'POST' && urlPath === '/admin/swarm/stop') {
+        return this._handleSwarmStop(req, res);
+      }
+      if (req.method === 'GET' && urlPath === '/admin/stats') {
+        return this._handleAdminStats(req, res);
       }
       // Handoff REST endpoints — /handoff/issue, /handoff/redeem, etc.
       if (this.handoff) {
@@ -198,6 +222,104 @@ class Gateway {
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: err.message }));
     }
+  }
+
+  async _handleSwarmSpawn(req, res) {
+    let body = '';
+    for await (const chunk of req) body += chunk;
+    let parsed;
+    try { parsed = body ? JSON.parse(body) : {}; }
+    catch { res.writeHead(400, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ error: 'bad_json' })); }
+    const total = Math.max(1, Math.min(10000, Number(parsed.total) || 100));
+    const ramp = Math.max(5, Math.min(200, Number(parsed.ramp) || 50));
+    // eslint-disable-next-line global-require
+    const path = require('path');
+    // eslint-disable-next-line global-require
+    const { spawn } = require('child_process');
+    if (this._swarmProc) {
+      try { this._swarmProc.kill('SIGTERM'); } catch (_e) {}
+    }
+    const swarmJs = path.resolve(__dirname, '../../botswarm/src/swarm.js');
+    const child = spawn(process.execPath, [swarmJs, `--total=${total}`, `--ramp=${ramp}`], {
+      env: { ...process.env, GATEWAY_HTTP_URL: 'http://127.0.0.1:3002', HIJACK_GATEWAY_URL: 'ws://127.0.0.1:3002' },
+      stdio: 'ignore',
+      detached: true,
+    });
+    child.unref();
+    this._swarmProc = child;
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true, pid: child.pid, total, ramp }));
+  }
+
+  async _handleSwarmStop(req, res) {
+    if (this._swarmProc) {
+      try { process.kill(-this._swarmProc.pid, 'SIGTERM'); }
+      catch { try { this._swarmProc.kill('SIGTERM'); } catch {} }
+      this._swarmProc = null;
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true }));
+  }
+
+  async _handleAdminStats(req, res) {
+    try {
+      const stakes = ['1-2', '5-10', '25-50'];
+      let totalTables = 0;
+      let totalSeated = 0;
+      let openSeats = 0;
+      for (const s of stakes) {
+        const raw = await this.opts.redis.zrange(`lobby:${s}:tables`, 0, -1, 'WITHSCORES');
+        for (let i = 0; i < raw.length; i += 2) {
+          totalTables += 1;
+          const open = Number(raw[i + 1]) || 0;
+          openSeats += open;
+          const meta = await this.opts.redis.hgetall(`table:${raw[i]}:meta`);
+          const max = Number(meta.maxSeats) || 0;
+          totalSeated += Math.max(0, max - open);
+        }
+      }
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ totalTables, totalSeated, openSeats, swarmRunning: !!this._swarmProc }));
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  async _handleSpectatorToken(req, res) {
+    let body = '';
+    for await (const chunk of req) body += chunk;
+    let parsed;
+    try { parsed = body ? JSON.parse(body) : {}; }
+    catch (_e) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'bad_json' }));
+    }
+    const { tableId } = parsed;
+    if (!tableId) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'tableId required' }));
+    }
+    const secret = this.opts.secret || process.env.GATEWAY_JWT_SECRET;
+    if (!secret) {
+      res.writeHead(503, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'secret_not_configured' }));
+    }
+    // eslint-disable-next-line global-require
+    const jwt = require('jsonwebtoken');
+    const sessionId = `spec-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    const token = jwt.sign(
+      {
+        sub: `spec-${sessionId}`,
+        tableId: String(tableId),
+        sessionId,
+        // no `seat` claim — spectator
+      },
+      secret,
+      { algorithm: 'HS256', expiresIn: '30m' }
+    );
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ token, tableId, sessionId }));
   }
 
   async _handleSeatClaim(req, res) {
@@ -495,6 +617,10 @@ class Gateway {
         }
       }
       ws._hijack.joined = true;
+      if (this.opts.onJoin) {
+        try { this.opts.onJoin({ tableId, userId: ws._hijack.userId, seat: ws._hijack.seat, username: msg.username || ws._hijack.username }); }
+        catch (_e) { /* best-effort */ }
+      }
     } catch (err) {
       this.log('join_failed', { tableId, err: err.message });
       this._send(ws, mkError('resume_failed', err.message, tableId));

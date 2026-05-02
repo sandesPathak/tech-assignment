@@ -1,0 +1,53 @@
+# fly.toml for the Hijack Poker WebSocket gateway.
+# Single 256 MB shared-cpu machine handles the connection fan-out for ~1k
+# WS clients (per phase doc). Sticky-by-tableId is enforced by the LB
+# layer when we scale to multiple machines later.
+
+app = "hijack-gateway"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "3002"
+  NODE_ENV = "production"
+
+[[services]]
+  internal_port = 3002
+  protocol = "tcp"
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 2000
+    soft_limit = 1500
+
+  [[services.tcp_checks]]
+    interval = "30s"
+    timeout  = "5s"
+    grace_period = "10s"
+
+[[services]]
+  internal_port = 3002
+  protocol = "tcp"
+
+  [[services.http_checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/health"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256

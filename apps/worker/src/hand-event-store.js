@@ -65,6 +65,29 @@ class PgHandEventStore {
     }));
   }
 
+  /**
+   * Half-open range [fromSeq, toSeq). `toSeq=Infinity` returns the tail.
+   * Used by the gateway resume path to ship missed events to a reconnecting
+   * client. Same shape as `loadEvents` but bounded on the upper end.
+   */
+  async range(handId, fromSeq, toSeq = Number.POSITIVE_INFINITY) {
+    const upper = Number.isFinite(toSeq) ? toSeq : 2147483647;
+    const { rows } = await this.pool.query(
+      `SELECT hand_id, seq, step, payload, created_at
+         FROM hand_events
+        WHERE hand_id = $1 AND seq >= $2 AND seq < $3
+        ORDER BY seq ASC`,
+      [handId, fromSeq, upper]
+    );
+    return rows.map((r) => ({
+      handId: r.hand_id,
+      seq: r.seq,
+      step: r.step,
+      payload: r.payload,
+      createdAt: r.created_at,
+    }));
+  }
+
   async close() {
     await this.pool.end();
   }
@@ -100,6 +123,14 @@ class MemoryHandEventStore {
     if (!m) return [];
     return [...m.values()]
       .filter((e) => e.seq >= fromSeq)
+      .sort((a, b) => a.seq - b.seq);
+  }
+
+  async range(handId, fromSeq, toSeq = Number.POSITIVE_INFINITY) {
+    const m = this.byHand.get(handId);
+    if (!m) return [];
+    return [...m.values()]
+      .filter((e) => e.seq >= fromSeq && e.seq < toSeq)
       .sort((a, b) => a.seq - b.seq);
   }
 

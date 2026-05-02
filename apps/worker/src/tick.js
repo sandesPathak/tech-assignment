@@ -2,6 +2,7 @@
 
 const { advance, getStepName } = require('./engine-runner');
 const { GAME_HAND } = require('@hijack/engine');
+const { NullPublisher } = require('./publish');
 
 /**
  * processTable — single advance of the table state machine.
@@ -10,11 +11,13 @@ const { GAME_HAND } = require('@hijack/engine');
  *   2. Run one engine step.
  *   3. Write delta back via the state store (pipelined Redis +
  *      durable Neon append).
+ *   4. Publish to `table:{id}:events` so the gateway can fan out.
  *
  * Mirrors the public API of the legacy serverless processTable so
  * existing /process-style tests keep working.
  */
-async function processTable(stateStore, tableId, playerAction) {
+async function processTable(stateStore, tableId, playerAction, publisher) {
+  const pub = publisher || new NullPublisher();
   const state = await stateStore.loadTable(tableId);
   if (!state) {
     return { status: 'not_found', tableId };
@@ -28,8 +31,6 @@ async function processTable(stateStore, tableId, playerAction) {
   }
 
   if (result.awaiting) {
-    // Engine wants a player action but we have none — we still snapshot
-    // the read so the loaded state is durable, but we don't bump seq.
     return {
       status: 'awaiting_action',
       tableId,
@@ -40,15 +41,25 @@ async function processTable(stateStore, tableId, playerAction) {
   }
 
   const handId = `${tableId}:${state.game.gameNo}`;
+  const payload = makePayload(before, result);
   const newSeq = await stateStore.applyTick(
     tableId,
     { game: result.game, players: result.players },
     {
       step: result.game.handStep,
-      payload: makePayload(before, result),
+      payload,
     },
     handId
   );
+
+  // Fan-out to gateway subscribers. Best-effort — durable record is in
+  // the event store and clients can resume from `lastSeq`.
+  await pub.publishTick(tableId, {
+    handId,
+    seq: newSeq,
+    step: result.game.handStep,
+    payload,
+  });
 
   return {
     status: 'processed',
@@ -61,9 +72,6 @@ async function processTable(stateStore, tableId, playerAction) {
 }
 
 function makePayload(stepBefore, result) {
-  // Hand events should be small + replayable but the canonical
-  // recovery path is the snapshot, so payload only records the
-  // delta surface area: step transition + key game scalars.
   return {
     from: stepBefore,
     to: result.game.handStep,

@@ -4,22 +4,22 @@ const Redis = require('ioredis');
 const { StateStore } = require('./state-store');
 const { createHandEventStore } = require('./hand-event-store');
 const { createServer } = require('./server');
+const { Publisher } = require('./publish');
 
 /**
  * Boot the worker:
  *   - Connect ioredis (REDIS_URL or default localhost:6379).
- *   - Connect HandEventStore (Neon if DATABASE_URL, sqlite otherwise).
+ *   - Connect HandEventStore (Neon if DATABASE_URL, in-memory otherwise).
+ *   - Wire a Publisher that fans out per-tick events to the gateway via
+ *     Redis pub/sub on `table:{id}:events`.
  *   - Start HTTP server on PORT (default 3001).
- *
- * Tables are not pre-loaded here — they hydrate on first /process
- * call via stateStore.loadTable, which pulls Redis hash or replays
- * from snapshot+tail.
  */
 async function main() {
   const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
   const eventStore = await createHandEventStore();
   const stateStore = new StateStore({ redis, eventStore });
-  const server = createServer({ stateStore });
+  const publisher = new Publisher({ redis, log: (...a) => console.warn('[worker]', ...a) });
+  const server = createServer({ stateStore, publisher });
   const port = parseInt(process.env.PORT || '3001', 10);
 
   await new Promise((resolve) => server.listen(port, resolve));

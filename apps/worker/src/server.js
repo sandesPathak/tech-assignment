@@ -12,7 +12,7 @@ const { processTable } = require('./tick');
  *   GET  /health
  *   GET  /metrics?tableId=N
  */
-function createServer({ stateStore }) {
+function createServer({ stateStore, publisher }) {
   return http.createServer(async (req, res) => {
     try {
       if (req.method === 'GET' && req.url === '/health') {
@@ -35,7 +35,7 @@ function createServer({ stateStore }) {
         const playerAction = (body.seat != null && body.action)
           ? { seat: body.seat, action: body.action, amount: body.amount || 0 }
           : undefined;
-        const result = await processTable(stateStore, tableId, playerAction);
+        const result = await processTable(stateStore, tableId, playerAction, publisher);
         const code = result.status === 'not_found' ? 404
           : result.status === 'error' ? 400
           : 200;

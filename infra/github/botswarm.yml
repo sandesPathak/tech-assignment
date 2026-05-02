@@ -1,0 +1,101 @@
+name: Botswarm — CI burst
+
+# Manual-trigger workflow: 20 runners × 500 bots = 10k concurrent for a
+# short burst. Cheaper than spinning the Oracle VM for a 5-min smoke test.
+#
+# Each runner:
+#   - clones the repo
+#   - installs deps for the botswarm workspace
+#   - launches one runner.js with bots=500, rate=100, profile=mix
+#   - streams the JSON metrics line into the job log for grafana ingest
+#
+# Total wallclock: ~20 minutes (5 min ramp + 15 min hold).
+
+on:
+  workflow_dispatch:
+    inputs:
+      gateway_url:
+        description: 'wss://… of the gateway'
+        required: true
+        default: 'wss://hijack-gateway.fly.dev'
+      bots_per_runner:
+        description: 'Bots to spawn per matrix runner'
+        required: true
+        default: '500'
+      duration_seconds:
+        description: 'Total run time per runner (seconds)'
+        required: true
+        default: '900'
+      profile:
+        description: 'random | tight | loose | mix'
+        required: true
+        default: 'mix'
+      table_ids:
+        description: 'Comma-separated tableIds (lobby fallback)'
+        required: true
+        default: 'demo-1,demo-2,demo-3,demo-4,demo-5'
+
+jobs:
+  swarm:
+    name: shard-${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    env:
+      GATEWAY_JWT_SECRET: ${{ secrets.GATEWAY_JWT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install workspace deps
+        run: npm install --workspaces --include-workspace-root --omit=dev
+
+      - name: Raise FD limit
+        # GH runners default to 1024 — need ~600 for 500 sockets + overhead.
+        run: ulimit -n 65535 || true
+
+      - name: Run swarm shard
+        env:
+          BOTS: ${{ inputs.bots_per_runner }}
+          DURATION: ${{ inputs.duration_seconds }}
+          PROFILE: ${{ inputs.profile }}
+          TABLE_IDS: ${{ inputs.table_ids }}
+          GATEWAY: ${{ inputs.gateway_url }}
+        run: |
+          set -eu
+          # Stagger shard starts by 2s × shard index so the gateway sees
+          # a smooth ramp instead of 20 simultaneous bursts.
+          sleep $((2 * ${{ matrix.shard }}))
+          node apps/botswarm/src/runner.js \
+            --gateway="$GATEWAY" \
+            --bots="$BOTS" \
+            --rate=100 \
+            --duration="$DURATION" \
+            --profile="$PROFILE" \
+            --tables="$TABLE_IDS" \
+            | tee shard-${{ matrix.shard }}.log
+
+      - name: Summarize metrics
+        if: always()
+        run: |
+          if [ -f shard-${{ matrix.shard }}.log ]; then
+            echo "## Shard ${{ matrix.shard }} summary" >> "$GITHUB_STEP_SUMMARY"
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            tail -n 5 shard-${{ matrix.shard }}.log >> "$GITHUB_STEP_SUMMARY" || true
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload metrics log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shard-${{ matrix.shard }}-metrics
+          path: shard-${{ matrix.shard }}.log
+          if-no-files-found: warn

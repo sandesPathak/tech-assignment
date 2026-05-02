@@ -1,0 +1,116 @@
+#cloud-config
+# Oracle Cloud Always Free VM provisioning for the Hijack Poker bot swarm.
+#
+# Target: VM.Standard.A1.Flex — 4 ARM cores, 24 GB RAM (always-free tier).
+# At < 2 MB/bot we comfortably fit 10k bots in 20 GB; the remaining 4 GB
+# absorbs OS overhead and pm2's event loops.
+#
+# After cloud-init completes:
+#   ssh ubuntu@<vm-ip>
+#   sudo -u botrunner bash -lc 'pm2 status'
+#
+# To roll out a new build:
+#   ssh ubuntu@<vm-ip> 'sudo -u botrunner bash -lc "cd ~/hijack-poker && git pull && npm install && pm2 reload botswarm"'
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - curl
+  - git
+  - build-essential
+  - htop
+  - jq
+  - ufw
+
+users:
+  - name: botrunner
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    shell: /bin/bash
+    groups: [users, admin]
+
+write_files:
+  - path: /etc/security/limits.d/99-botswarm.conf
+    permissions: '0644'
+    content: |
+      # 10k WebSocket sockets per process easily exceeds the default 1024 fd cap.
+      # We raise to 200k to leave headroom for pm2 cluster mode.
+      botrunner soft nofile 200000
+      botrunner hard nofile 200000
+      *         soft nofile 200000
+      *         hard nofile 200000
+
+  - path: /etc/sysctl.d/99-botswarm.conf
+    permissions: '0644'
+    content: |
+      # Tuning for many short-lived outbound connections.
+      net.core.somaxconn = 4096
+      net.ipv4.tcp_max_syn_backlog = 4096
+      net.ipv4.ip_local_port_range = 10000 65535
+      net.ipv4.tcp_tw_reuse = 1
+      net.ipv4.tcp_fin_timeout = 15
+      fs.file-max = 1000000
+
+  - path: /home/botrunner/ecosystem.config.js
+    owner: botrunner:botrunner
+    permissions: '0644'
+    content: |
+      // pm2 config — single instance for now (Node handles 10k WS in one
+      // process easily; cluster mode would multiply RAM and isn't needed).
+      module.exports = {
+        apps: [{
+          name: 'botswarm',
+          cwd: '/home/botrunner/hijack-poker/apps/botswarm',
+          script: 'src/runner.js',
+          node_args: '--max-old-space-size=20480',
+          env: {
+            NODE_ENV: 'production',
+            HIJACK_GATEWAY_URL: 'wss://hijack-gateway.fly.dev',
+            HIJACK_BOTS: '10000',
+            HIJACK_TABLE_IDS: 'demo-1,demo-2,demo-3,demo-4,demo-5',
+            // GATEWAY_JWT_SECRET sourced from /etc/botswarm.env (see below).
+          },
+          env_file: '/etc/botswarm.env',
+          max_memory_restart: '22G',
+          autorestart: true,
+          merge_logs: true,
+          out_file: '/home/botrunner/.pm2/logs/botswarm-out.log',
+          error_file: '/home/botrunner/.pm2/logs/botswarm-err.log',
+        }]
+      };
+
+  - path: /etc/botswarm.env.template
+    permissions: '0600'
+    content: |
+      # Copy to /etc/botswarm.env, fill in, chmod 600.
+      GATEWAY_JWT_SECRET=replace-me
+
+runcmd:
+  - sysctl --system
+  # Node 22 LTS via NodeSource (works on Oracle's ARM image).
+  - curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+  - apt-get install -y nodejs
+  - npm install -g pm2@latest
+  # Firewall: only SSH inbound. The bots dial out to Fly, no inbound port.
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow OpenSSH
+  - ufw --force enable
+  # Bootstrap the runner under botrunner.
+  - sudo -u botrunner bash -lc 'cd ~ && git clone https://github.com/<owner>/hijack-poker.git || true'
+  - sudo -u botrunner bash -lc 'cd ~/hijack-poker && npm install --workspaces --include-workspace-root --omit=dev'
+  - |
+    if [ ! -f /etc/botswarm.env ]; then
+      cp /etc/botswarm.env.template /etc/botswarm.env
+      chmod 600 /etc/botswarm.env
+      echo "WARN: /etc/botswarm.env created from template — populate GATEWAY_JWT_SECRET before starting pm2."
+    fi
+  - sudo -u botrunner bash -lc 'pm2 startup systemd -u botrunner --hp /home/botrunner' || true
+  - sudo -u botrunner bash -lc 'pm2 save' || true
+
+final_message: |
+  Hijack botswarm VM provisioned. Next steps:
+    1. ssh ubuntu@<vm-ip>
+    2. sudo $EDITOR /etc/botswarm.env  # set GATEWAY_JWT_SECRET
+    3. sudo -u botrunner bash -lc 'pm2 start /home/botrunner/ecosystem.config.js'
+    4. sudo -u botrunner bash -lc 'pm2 logs botswarm --lines 50'

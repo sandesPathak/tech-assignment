@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "description": "Hijack Poker Technical Assignment - Serverless Infrastructure",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "start:rewards": "docker compose --profile rewards up",
     "start:engine": "docker compose --profile engine up",

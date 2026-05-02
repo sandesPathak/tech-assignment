@@ -1,0 +1,21 @@
+{
+  "name": "@hijack/engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hijack Poker engine — pure card/betting/pot logic, no I/O",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./constants": "./src/constants.js",
+    "./cards": "./src/cards.js",
+    "./betting": "./src/betting.js",
+    "./players": "./src/players.js",
+    "./pots": "./src/pots.js"
+  },
+  "scripts": {
+    "test": "echo \"no engine-package tests yet\" && exit 0"
+  },
+  "dependencies": {
+    "pokersolver": "^2.1.4"
+  }
+}

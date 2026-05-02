@@ -73,9 +73,36 @@ function StreakCounter({ type, count, label, best }: StreakCounterProps) {
     prevCount.current = count;
   }, [count, scale]);
 
+  const accent = isLogin ? '#FF6B35' : '#A78BFA';
+
   return (
-    <Card ref={cardRef} data-testid={`streak-counter-${type}`} sx={{ opacity: 0 }}>
-      <CardContent>
+    <Card
+      ref={cardRef}
+      data-testid={`streak-counter-${type}`}
+      sx={{
+        opacity: 0,
+        position: 'relative',
+        overflow: 'hidden',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        bgcolor: 'rgba(26,29,39,0.85)',
+        transition: 'transform .25s, border-color .25s, box-shadow .25s',
+        '&:hover': {
+          transform: 'translateY(-3px)',
+          borderColor: `${accent}66`,
+          boxShadow: `0 0 24px ${accent}1F`,
+        },
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          background: `radial-gradient(closest-side at 100% 0%, ${accent}24, transparent 70%)`,
+          opacity: 0.7,
+        },
+      }}
+    >
+      <CardContent sx={{ position: 'relative', zIndex: 1 }}>
         <Box display="flex" alignItems="center" gap={2.5}>
           <Box
             sx={{
@@ -83,13 +110,15 @@ function StreakCounter({ type, count, label, best }: StreakCounterProps) {
               height: 64,
               borderRadius: 4,
               background: iconBg,
+              border: `1px solid ${accent}33`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
+              boxShadow: `0 0 18px ${accent}24, inset 0 1px 0 rgba(255,255,255,0.04)`,
             }}
           >
-            <Box ref={iconRef} sx={{ display: 'flex', transform: `scale(${scale})` }}>
+            <Box ref={iconRef} sx={{ display: 'flex', transform: `scale(${scale})`, filter: `drop-shadow(0 0 6px ${accent}80)` }}>
               {isLogin ? (
                 <LocalFireDepartmentIcon
                   data-testid="flame-icon"
@@ -101,17 +130,17 @@ function StreakCounter({ type, count, label, best }: StreakCounterProps) {
             </Box>
           </Box>
           <Box>
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500, fontSize: 13 }}>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase' }}>
               {label}
             </Typography>
-            <Typography variant="h4" fontWeight={700} sx={{ lineHeight: 1.2 }}>
+            <Typography variant="h4" fontWeight={800} sx={{ lineHeight: 1.2, letterSpacing: -0.5 }}>
               <span ref={countRef}>0</span>{' '}
               <Typography component="span" sx={{ fontSize: 20, fontWeight: 700, color: 'text.secondary' }}>
                 days
               </Typography>
             </Typography>
             {best !== undefined && (
-              <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 500, fontSize: 12 }}>
+              <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 600, fontSize: 12 }}>
                 Best: {best} days
               </Typography>
             )}

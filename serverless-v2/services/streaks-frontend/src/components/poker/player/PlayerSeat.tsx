@@ -78,7 +78,7 @@ function PlayerSeat({ player, game, timerProgress, timeLeft, isHero }: PlayerSea
   const showCardsFaceUp = isShowdown && !isFolded && hasCards;
   const isWinner = player.winnings > 0;
   const isActing = game.move === player.seat && player.status === '1' && game.stepName.includes('BETTING');
-  const avatarColor = isHero ? '#FFB300' : AVATAR_COLORS[(player.seat - 1) % AVATAR_COLORS.length];
+  const avatarColor = isHero ? '#FF6B35' : AVATAR_COLORS[(player.seat - 1) % AVATAR_COLORS.length];
   const cardsDealt = game.handStep >= 4;
 
   // Hero avatar is bigger
@@ -107,8 +107,8 @@ function PlayerSeat({ player, game, timerProgress, timeLeft, isHero }: PlayerSea
           sx={{
             fontSize: isHero ? 14 : isActing ? 13 : 12,
             fontWeight: isHero ? 800 : 700,
-            color: isAllIn ? '#FF9800' : isWinner ? '#4ADE80' : isActing ? '#FFD700' : isHero ? '#FFB300' : '#fff',
-            textShadow: isHero ? '0 0 8px rgba(255,179,0,0.4), 0 1px 3px rgba(0,0,0,0.8)' : '0 1px 3px rgba(0,0,0,0.8)',
+            color: isAllIn ? '#FF9800' : isWinner ? '#4ADE80' : isActing ? '#FFD700' : isHero ? '#FF6B35' : '#fff',
+            textShadow: isHero ? '0 0 8px rgba(255,107,53,0.45), 0 1px 3px rgba(0,0,0,0.8)' : '0 1px 3px rgba(0,0,0,0.8)',
             transition: 'all 0.3s ease',
           }}
         >

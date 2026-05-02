@@ -14,6 +14,62 @@ interface PokerTableProps {
   heroDisplayName?: string | null;
   /** Real seat number the local user is sitting at. Used for visual rotation. */
   heroSeat?: number | null;
+  /** Stable id used to deterministically pick the table's visual theme. */
+  tableId?: string | null;
+}
+
+interface TableTheme {
+  feltBg: string;
+  feltShadow: string;
+  border: string;
+  outerShadow: string;
+  /** Optional faded suit glyph rendered inside the felt. */
+  suitGlyph?: string;
+}
+
+const TABLE_THEMES: TableTheme[] = [
+  // A — Classic green felt · orange wooden rim (brand-orange variant)
+  {
+    feltBg: 'radial-gradient(ellipse at 40% 40%, #2d7a4a, #1b5c35, #134528)',
+    feltShadow:
+      '0 0 50px rgba(0,0,0,0.6), inset 0 0 30px rgba(0,0,0,0.3), inset 0 0 80px rgba(255,107,53,0.06)',
+    border: '8px solid #6b3618',
+    outerShadow:
+      '0 0 0 12px #2a1407, 0 0 30px rgba(255,107,53,0.35), inset 0 2px 0 rgba(255,255,255,0.1)',
+  },
+  // B — Neon orange ring · deep blue-black felt
+  {
+    feltBg: 'radial-gradient(ellipse at 40% 40%, #1a2233, #0c1220, #060a14)',
+    feltShadow: 'inset 0 0 80px rgba(0,0,0,0.7), inset 0 0 60px rgba(255,107,53,0.06)',
+    border: '4px solid #FF6B35',
+    outerShadow:
+      '0 0 30px rgba(255,107,53,0.55), inset 0 0 20px rgba(255,107,53,0.25)',
+  },
+  // C — Warm amber/red felt (no green) · gold rim
+  {
+    feltBg: 'radial-gradient(ellipse at 40% 40%, #4a1f0d, #2a1208, #1a0b06)',
+    feltShadow:
+      '0 0 50px rgba(0,0,0,0.6), inset 0 0 60px rgba(0,0,0,0.5), inset 0 0 90px rgba(255,107,53,0.18)',
+    border: '8px solid #8a5a18',
+    outerShadow:
+      '0 0 0 10px #2a1a08, 0 0 36px rgba(249,115,22,0.5), inset 0 2px 0 rgba(255,255,255,0.18)',
+  },
+  // D — Black felt · suit pattern · neon orange ring
+  {
+    feltBg: 'radial-gradient(ellipse at 40% 40%, #11151d, #06080d, #03050a)',
+    feltShadow: 'inset 0 0 80px rgba(0,0,0,0.75), inset 0 0 60px rgba(255,107,53,0.08)',
+    border: '3px solid #FF6B35',
+    outerShadow:
+      '0 0 30px rgba(255,107,53,0.55), inset 0 0 24px rgba(255,107,53,0.25), 0 0 0 6px rgba(255,107,53,0.18)',
+    suitGlyph: '♠',
+  },
+];
+
+function pickTheme(tableId: string | null | undefined): TableTheme {
+  if (!tableId) return TABLE_THEMES[0];
+  let h = 0;
+  for (let i = 0; i < tableId.length; i += 1) h = (h * 31 + tableId.charCodeAt(i)) >>> 0;
+  return TABLE_THEMES[h % TABLE_THEMES.length];
 }
 
 // 6 seats evenly spaced 60° apart on the felt ellipse, hero at bottom,
@@ -63,9 +119,10 @@ const potPulse = keyframes`
   50% { transform: translateX(-50%) scale(1.08); }
 `;
 
-function PokerTable({ tableState, timerProgress, timeLeft, heroPlayerId, heroDisplayName, heroSeat: heroSeatProp }: PokerTableProps) {
+function PokerTable({ tableState, timerProgress, timeLeft, heroPlayerId, heroDisplayName, heroSeat: heroSeatProp, tableId }: PokerTableProps) {
   const { game, players } = tableState;
   const hasCards = game.communityCards && game.communityCards.length > 0;
+  const theme = pickTheme(tableId ?? (game as { tableId?: string }).tableId ?? null);
 
   // Track per-seat bet deltas so we can fly chips from seat → pot on raises.
   const lastBetsRef = useRef<Record<number, number>>({});
@@ -150,11 +207,49 @@ function PokerTable({ tableState, timerProgress, timeLeft, heroPlayerId, heroDis
             width: 540,
             height: 330,
             borderRadius: '50%',
-            background: 'radial-gradient(ellipse at 40% 40%, #2d7a4a, #1b5c35, #134528)',
-            border: '8px solid #3d2a1a',
-            boxShadow: '0 0 50px rgba(0,0,0,0.6), inset 0 0 30px rgba(0,0,0,0.3), 0 0 0 12px #2a1a0a',
+            background: theme.feltBg,
+            border: theme.border,
+            boxShadow: `${theme.outerShadow}, ${theme.feltShadow}`,
+            overflow: 'hidden',
           }}
         >
+          {/* Optional faded suit glyphs (theme D) */}
+          {theme.suitGlyph && (
+            <>
+              <Box
+                aria-hidden
+                sx={{
+                  position: 'absolute',
+                  left: '8%',
+                  top: '14%',
+                  fontSize: 160,
+                  lineHeight: 1,
+                  color: 'rgba(255,107,53,0.07)',
+                  fontWeight: 900,
+                  pointerEvents: 'none',
+                  transform: 'rotate(-12deg)',
+                }}
+              >
+                ♠
+              </Box>
+              <Box
+                aria-hidden
+                sx={{
+                  position: 'absolute',
+                  right: '8%',
+                  bottom: '10%',
+                  fontSize: 160,
+                  lineHeight: 1,
+                  color: 'rgba(255,107,53,0.06)',
+                  fontWeight: 900,
+                  pointerEvents: 'none',
+                  transform: 'rotate(8deg)',
+                }}
+              >
+                ♥
+              </Box>
+            </>
+          )}
           {/* Community cards — animated */}
           <Box
             sx={{

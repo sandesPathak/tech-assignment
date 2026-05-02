@@ -200,6 +200,7 @@ function PokerGame() {
               ?? tableState.players.find((p) => String(p.playerId) === String(playerId))?.seat
               ?? null
             }
+            tableId={requestedTableId}
           />
         </Box>
 

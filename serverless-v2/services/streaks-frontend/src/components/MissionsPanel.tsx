@@ -58,12 +58,31 @@ function MissionsPanel() {
   }
 
   return (
-    <Card sx={{ bgcolor: '#1A1D27', border: '1px solid #2A2D3A', borderRadius: 4 }}>
-      <CardContent sx={{ p: 3 }}>
+    <Card
+      sx={{
+        bgcolor: 'rgba(26,29,39,0.85)',
+        border: '1px solid #2A2D3A',
+        borderRadius: 4,
+        position: 'relative',
+        overflow: 'hidden',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          background:
+            'radial-gradient(closest-side at 0% 0%, rgba(255,107,53,0.12), transparent 60%),' +
+            'radial-gradient(closest-side at 100% 100%, rgba(124,58,237,0.10), transparent 60%)',
+        },
+      }}
+    >
+      <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
           <Box display="flex" alignItems="center" gap={1}>
-            <TrackChangesIcon sx={{ color: '#FF6B35', fontSize: 24 }} />
-            <Typography variant="h6" fontWeight={700} color="#fff">
+            <TrackChangesIcon sx={{ color: '#FF6B35', fontSize: 24, filter: 'drop-shadow(0 0 8px rgba(255,107,53,0.6))' }} />
+            <Typography variant="h6" fontWeight={800} color="#fff" sx={{ letterSpacing: -0.3 }}>
               Daily Missions
             </Typography>
           </Box>
@@ -71,7 +90,13 @@ function MissionsPanel() {
             icon={<StarIcon sx={{ fontSize: 14 }} />}
             label={`${pointsEarnedToday} pts today`}
             size="small"
-            sx={{ bgcolor: '#2A2D3A', color: '#FFD700', fontWeight: 600, fontSize: 11 }}
+            sx={{
+              bgcolor: 'rgba(255,215,0,0.10)',
+              border: '1px solid rgba(255,215,0,0.3)',
+              color: '#FFD700',
+              fontWeight: 700,
+              fontSize: 11,
+            }}
           />
         </Box>
 
@@ -81,6 +106,16 @@ function MissionsPanel() {
             const isCompleted = mission.status === 'completed';
             const isClaimed = mission.status === 'claimed';
             const barColor = isClaimed ? '#4ADE80' : isCompleted ? '#FFB300' : '#FF6B35';
+            const barGradient = isClaimed
+              ? 'linear-gradient(90deg, #16A34A, #4ADE80)'
+              : isCompleted
+              ? 'linear-gradient(90deg, #FBBF24, #FFB300)'
+              : 'linear-gradient(90deg, #FF6B35, #FBBF24)';
+            const accentBorder = isClaimed
+              ? 'rgba(74,222,128,0.35)'
+              : isCompleted
+              ? 'rgba(255,179,0,0.4)'
+              : 'rgba(255,107,53,0.25)';
 
             return (
               <Box
@@ -88,10 +123,22 @@ function MissionsPanel() {
                 data-mission
                 sx={{
                   p: 2,
+                  pl: 2.25,
                   borderRadius: 3,
-                  bgcolor: isClaimed ? 'rgba(74,222,128,0.06)' : isCompleted ? 'rgba(255,179,0,0.08)' : '#141720',
-                  border: isCompleted ? '1px solid rgba(255,179,0,0.3)' : '1px solid #2A2D3A',
+                  bgcolor: isClaimed ? 'rgba(74,222,128,0.06)' : isCompleted ? 'rgba(255,179,0,0.08)' : 'rgba(20,23,32,0.85)',
+                  border: `1px solid ${accentBorder}`,
                   opacity: 0,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  transition: 'transform .2s, border-color .2s',
+                  '&:hover': { transform: 'translateY(-2px)', borderColor: barColor },
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    left: 0, top: 0, bottom: 0, width: 3,
+                    background: barGradient,
+                    boxShadow: `0 0 8px ${barColor}80`,
+                  },
                 }}
               >
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
@@ -116,15 +163,15 @@ function MissionsPanel() {
                 </Typography>
                 <Box display="flex" alignItems="center" gap={1}>
                   {/* Custom progress bar for GSAP animation */}
-                  <Box sx={{ flex: 1, height: 6, borderRadius: 3, bgcolor: '#2A2D3A', overflow: 'hidden' }}>
+                  <Box sx={{ flex: 1, height: 8, borderRadius: 4, bgcolor: 'rgba(42,45,58,0.7)', overflow: 'hidden', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.4)' }}>
                     <Box
                       data-bar={pct}
                       sx={{
                         height: '100%',
                         width: 0,
-                        borderRadius: 3,
-                        bgcolor: barColor,
-                        boxShadow: isCompleted ? `0 0 8px ${barColor}40` : 'none',
+                        borderRadius: 4,
+                        background: barGradient,
+                        boxShadow: `0 0 10px ${barColor}66`,
                       }}
                     />
                   </Box>

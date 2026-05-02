@@ -52,8 +52,19 @@ function DashboardHeader({ tier, data, user, todayCheckedIn, isExcluded, selfExc
       mb={4}
     >
       <Box display="flex" alignItems="center" gap={1.5}>
-        <LocalFireDepartmentIcon sx={{ fontSize: 36, color: 'primary.main' }} />
-        <Typography variant="h4" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
+        <LocalFireDepartmentIcon sx={{ fontSize: 36, color: 'primary.main', filter: 'drop-shadow(0 0 12px rgba(255,107,53,0.7))' }} />
+        <Typography
+          variant="h4"
+          fontWeight={800}
+          sx={{
+            fontSize: { xs: '1.5rem', sm: '2.125rem' },
+            letterSpacing: -0.5,
+            background: 'linear-gradient(135deg, #FFFFFF 0%, #FFE4D6 50%, #FFB199 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+        >
           Daily Streaks
         </Typography>
         {data && <VipBadge tier={tier} />}

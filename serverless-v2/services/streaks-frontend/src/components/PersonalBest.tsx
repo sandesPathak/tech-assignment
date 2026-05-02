@@ -18,11 +18,41 @@ function PersonalBest({
   const isPlayBest = currentPlayStreak > 0 && currentPlayStreak >= bestPlayStreak;
 
   return (
-    <Card data-testid="personal-best">
-      <CardContent>
+    <Card
+      data-testid="personal-best"
+      sx={{
+        position: 'relative',
+        overflow: 'hidden',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        bgcolor: 'rgba(26,29,39,0.85)',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          background: 'radial-gradient(closest-side at 0% 0%, rgba(255,215,0,0.10), transparent 60%)',
+        },
+      }}
+    >
+      <CardContent sx={{ position: 'relative', zIndex: 1 }}>
         <Box display="flex" alignItems="center" gap={2} mb={2}>
-          <EmojiEventsIcon sx={{ fontSize: 32, color: '#FFD700' }} data-testid="trophy-icon" />
-          <Typography variant="h6" fontWeight={700}>
+          <Box
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: 2.5,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'linear-gradient(180deg, rgba(255,215,0,0.15), rgba(251,191,36,0.06))',
+              border: '1px solid rgba(255,215,0,0.3)',
+              boxShadow: '0 0 18px rgba(255,215,0,0.18), inset 0 1px 0 rgba(255,255,255,0.05)',
+            }}
+          >
+            <EmojiEventsIcon sx={{ fontSize: 26, color: '#FFD700', filter: 'drop-shadow(0 0 6px rgba(255,215,0,0.8))' }} data-testid="trophy-icon" />
+          </Box>
+          <Typography variant="h6" fontWeight={800} sx={{ letterSpacing: -0.3 }}>
             Personal Best
           </Typography>
         </Box>

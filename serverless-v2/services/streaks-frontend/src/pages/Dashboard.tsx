@@ -62,7 +62,28 @@ function Dashboard() {
   })();
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: 5, px: { xs: 2, md: 6 } }}>
+    <Box
+      sx={{
+        position: 'relative',
+        minHeight: '100vh',
+        bgcolor: 'background.default',
+        py: 5,
+        px: { xs: 2, md: 6 },
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'fixed',
+          inset: 0,
+          zIndex: 0,
+          pointerEvents: 'none',
+          background:
+            'radial-gradient(900px 500px at 12% 0%, rgba(255,107,53,0.10), transparent 60%),' +
+            'radial-gradient(800px 500px at 88% 0%, rgba(124,58,237,0.10), transparent 60%),' +
+            'radial-gradient(1000px 600px at 50% 110%, rgba(255,179,0,0.06), transparent 70%)',
+        },
+        '& > *': { position: 'relative', zIndex: 1 },
+      }}
+    >
       <Celebration active={celebrating} onComplete={() => setCelebrating(false)} />
       <Container maxWidth="xl" disableGutters>
         <DashboardHeader

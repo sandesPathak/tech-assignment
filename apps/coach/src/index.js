@@ -188,9 +188,10 @@ async function main() {
 
   const subRedis = new Redis(process.env.REDIS_URL);
   const pubRedis = new Redis(process.env.REDIS_URL);
-  const eventStore = await createHandEventStore({ driver: 'pg' });
+  const driver = process.env.DATABASE_URL ? 'pg' : 'memory';
+  const eventStore = await createHandEventStore({ driver });
   const { createAnalysisStore } = require('./repo');
-  const analysisStore = await createAnalysisStore({ driver: 'pg' });
+  const analysisStore = await createAnalysisStore({ driver });
 
   const worker = new CoachWorker({
     subRedis,

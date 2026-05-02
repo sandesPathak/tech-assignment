@@ -14,6 +14,15 @@
     "stop": "docker compose down -v",
     "seed:rewards": "node scripts/seed-rewards.js",
     "seed:streaks": "node scripts/seed-streaks.js",
-    "simulate:hands": "node scripts/simulate-hands.js"
+    "simulate:hands": "node scripts/simulate-hands.js",
+    "infra:up": "docker run -d --rm --name hp-redis -p 6379:6379 redis:7-alpine && docker run -d --rm --name hp-pg -p 5432:5432 -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=hijack postgres:16-alpine",
+    "infra:down": "docker stop hp-redis hp-pg || true",
+    "infra:migrate": "psql \"$DATABASE_URL\" -f infra/neon/001_hand_events.sql -f infra/neon/002_hand_analysis.sql -f infra/neon/003_players.sql",
+    "dev": "concurrently -n worker,gateway,coach,web -c blue,green,magenta,cyan \"npm run dev -w apps/worker\" \"npm run dev -w apps/gateway\" \"npm run dev -w apps/coach\" \"npm run dev -w apps/web\"",
+    "dev:bots": "npm run smoke -w apps/botswarm",
+    "test:all": "npm test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
   }
 }

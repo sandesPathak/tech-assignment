@@ -10,6 +10,7 @@
 
 const Redis = require('ioredis');
 const { Gateway } = require('./ws-server');
+const { attachCoachApi } = require('./coach-api');
 const { StateStore } = require('@hijack/worker/src/state-store');
 const { createHandEventStore } = require('@hijack/worker/src/hand-event-store');
 const { initTracing, shutdownTracing } = require('@hijack/observability/tracing');
@@ -34,6 +35,11 @@ async function main() {
 
   const port = parseInt(process.env.PORT || '3002', 10);
   await gateway.start({ port });
+  // Phase 4 follow-up: HTTP /api/coach/:handId/:hero proxy + hand:completed
+  // re-broadcast as s2c.delta with payload.kind='hand_completed'. Additive
+  // — never modifies existing routes.
+  try { await attachCoachApi(gateway); }
+  catch (err) { log.warn({ err: err.message }, 'coach_api_attach_failed'); }
   log.info({ port }, 'gateway_listening');
 
   const shutdown = async (signal) => {

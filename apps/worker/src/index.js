@@ -5,6 +5,7 @@ const { StateStore } = require('./state-store');
 const { createHandEventStore } = require('./hand-event-store');
 const { createServer } = require('./server');
 const { Publisher } = require('./publish');
+const { Matchmaker } = require('./matchmaker');
 
 /**
  * Boot the worker:
@@ -20,6 +21,12 @@ async function main() {
   const stateStore = new StateStore({ redis, eventStore });
   const publisher = new Publisher({ redis, log: (...a) => console.warn('[worker]', ...a) });
   const server = createServer({ stateStore, publisher });
+  const matchmaker = new Matchmaker({
+    redis,
+    stateStore,
+    log: (...a) => console.warn('[matchmaker]', ...a),
+  });
+  matchmaker.start();
   const port = parseInt(process.env.PORT || '3001', 10);
 
   await new Promise((resolve) => server.listen(port, resolve));
@@ -29,6 +36,7 @@ async function main() {
   const shutdown = async (signal) => {
     // eslint-disable-next-line no-console
     console.log(`[worker] ${signal} received, shutting down`);
+    matchmaker.stop();
     server.close();
     await eventStore.close();
     redis.disconnect();

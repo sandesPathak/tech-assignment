@@ -39,6 +39,9 @@ export interface C2SJoin {
   tableId: string
   seat?: number
   lastSeq?: number
+  /** Phase 3 — short-lived JWT minted by the seat-claim REST endpoint.
+   *  The gateway verifies it before letting the client `bind` to a seat. */
+  joinToken?: string
 }
 
 /** Player action — fold/check/call/bet/raise/all-in. */
@@ -56,7 +59,24 @@ export interface C2SLeave {
   tableId: string
 }
 
-export type ClientMessage = C2SJoin | C2SAction | C2SLeave
+/** Subscribe to live lobby updates for one stake. */
+export interface C2SLobbySubscribe {
+  t: 'c2s.lobby_subscribe'
+  stake: string
+}
+
+/** Stop receiving lobby updates for the previously-subscribed stake. */
+export interface C2SLobbyUnsubscribe {
+  t: 'c2s.lobby_unsubscribe'
+  stake: string
+}
+
+export type ClientMessage =
+  | C2SJoin
+  | C2SAction
+  | C2SLeave
+  | C2SLobbySubscribe
+  | C2SLobbyUnsubscribe
 
 // ─── Server -> Client (s2c) ────────────────────────────────────────────────
 
@@ -95,14 +115,61 @@ export interface S2CKicked {
   reason: string
 }
 
-export type ServerMessage = S2CSnapshot | S2CDelta | S2CError | S2CKicked
+/** A single table row in the lobby snapshot. */
+export interface LobbyTableRow {
+  tableId: string
+  name: string
+  openSeats: number
+  maxSeats: number
+  smallBlind: number
+  bigBlind: number
+}
+
+/** Full lobby state for a stake. */
+export interface S2CLobbyState {
+  t: 's2c.lobby_state'
+  stake: string
+  tables: LobbyTableRow[]
+}
+
+/** Incremental lobby update. `kind` discriminates payload fields. */
+export interface S2CLobbyDelta {
+  t: 's2c.lobby_delta'
+  stake: string
+  kind:
+    | 'table_added'
+    | 'table_removed'
+    | 'seat_filled'
+    | 'seat_freed'
+  tableId: string
+  seat?: number
+  openSeats?: number
+  maxSeats?: number
+  name?: string
+  smallBlind?: number
+  bigBlind?: number
+}
+
+export type ServerMessage =
+  | S2CSnapshot
+  | S2CDelta
+  | S2CError
+  | S2CKicked
+  | S2CLobbyState
+  | S2CLobbyDelta
 
 // ─── Convenience type guards (compile to runtime) ─────────────────────────
 
 export function isClientMessage(x: unknown): x is ClientMessage {
   if (!x || typeof x !== 'object') return false
   const t = (x as { t?: unknown }).t
-  return t === 'c2s.join' || t === 'c2s.action' || t === 'c2s.leave'
+  return (
+    t === 'c2s.join' ||
+    t === 'c2s.action' ||
+    t === 'c2s.leave' ||
+    t === 'c2s.lobby_subscribe' ||
+    t === 'c2s.lobby_unsubscribe'
+  )
 }
 
 export function isServerMessage(x: unknown): x is ServerMessage {
@@ -112,6 +179,8 @@ export function isServerMessage(x: unknown): x is ServerMessage {
     t === 's2c.snapshot' ||
     t === 's2c.delta' ||
     t === 's2c.error' ||
-    t === 's2c.kicked'
+    t === 's2c.kicked' ||
+    t === 's2c.lobby_state' ||
+    t === 's2c.lobby_delta'
   )
 }

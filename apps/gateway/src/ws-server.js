@@ -33,6 +33,9 @@ const {
 } = require('./auth');
 const { RedisBus } = require('./redis-bus');
 const { planResume } = require('./resume');
+const { LobbyManager } = require('./lobby');
+const { SeatClaimer } = require('./seat-claim');
+const { listStakes, getStake } = require('@hijack/protocol/stakes');
 const {
   C2S,
   S2C,
@@ -78,22 +81,29 @@ class Gateway {
     this.httpServer = null;
     this.wss = null;
     this.heartbeatTimer = null;
+    // Phase 3 — lobby + seat-claim. Both are optional in tests that don't
+    // need them (existing fan-out tests inject `redis` only).
+    this.lobby = new LobbyManager({
+      redis: opts.redis,
+      subscriberFactory: opts.subscriberFactory,
+      log: this.log,
+    });
+    this.seatClaimer = opts.secret || process.env.GATEWAY_JWT_SECRET
+      ? new SeatClaimer({
+          redis: opts.redis,
+          secret: opts.secret || process.env.GATEWAY_JWT_SECRET,
+        })
+      : null;
   }
 
   async start({ port = 0 } = {}) {
     await this.bus.start();
-    // Bus → per-table fan-out. We register a single subscriber per table
-    // when its first socket connects.
-    this.httpServer = http.createServer((req, res) => {
-      // Health endpoint — useful for Fly.io and the integration test.
-      if (req.url === '/health') {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ service: 'hijack-gateway', status: 'ok' }));
-        return;
-      }
-      res.writeHead(404);
-      res.end();
-    });
+    await this.lobby.start();
+    if (this.seatClaimer) {
+      try { await this.seatClaimer.load(); }
+      catch (err) { this.log('seat_claim_lua_load_failed', { err: err.message }); }
+    }
+    this.httpServer = http.createServer((req, res) => this._handleHttp(req, res));
 
     this.wss = new WebSocketServer({ noServer: true, maxPayload: MAX_INBOUND_BYTES });
 
@@ -118,11 +128,93 @@ class Gateway {
       await new Promise((resolve) => this.httpServer.close(resolve));
     }
     await this.bus.stop();
+    await this.lobby.stop();
+  }
+
+  /**
+   * HTTP request router — `/health`, `/lobby/:stake` list, `/seat-claim`
+   * POST (REST shim that wraps the same Lua call the WS handler uses).
+   * All non-WS routes pass through here; WS upgrades are intercepted in
+   * the `upgrade` event before this fires.
+   */
+  async _handleHttp(req, res) {
+    try {
+      const urlPath = (req.url || '/').split('?')[0];
+      if (req.method === 'GET' && urlPath === '/health') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ service: 'hijack-gateway', status: 'ok' }));
+      }
+      if (req.method === 'GET' && urlPath === '/lobby') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ stakes: listStakes() }));
+      }
+      const lobbyMatch = urlPath.match(/^\/lobby\/([^/]+)$/);
+      if (req.method === 'GET' && lobbyMatch) {
+        return this.lobby.handleRestList(lobbyMatch[1], res);
+      }
+      if (req.method === 'POST' && urlPath === '/seat-claim') {
+        return this._handleSeatClaim(req, res);
+      }
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'not_found' }));
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  async _handleSeatClaim(req, res) {
+    if (!this.seatClaimer) {
+      res.writeHead(503, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'seat_claim_unavailable' }));
+    }
+    let body = '';
+    for await (const chunk of req) body += chunk;
+    let parsed;
+    try { parsed = body ? JSON.parse(body) : {}; }
+    catch (_e) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'bad_json' }));
+    }
+    const { stake, tableId, seat, userId, reservationToken } = parsed;
+    if (!stake || !tableId || seat == null || !userId) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'missing_field' }));
+    }
+    const result = await this.seatClaimer.claim({
+      stake,
+      tableId,
+      seat: Number(seat),
+      userId: String(userId),
+      reservationToken,
+    });
+    if (!result.ok) {
+      res.writeHead(409, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: result.reason }));
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(result));
   }
 
   // ─── upgrade ─────────────────────────────────────────────────────────
 
   _handleUpgrade(req, socket, head) {
+    const path = (req.url || '').split('?')[0];
+
+    // Lobby upgrade — no table binding. Token is optional; if supplied
+    // we record the userId but the lobby is browseable anonymously.
+    if (path === '/lobby') {
+      let claims = null;
+      const token = extractToken(req.url);
+      if (token) {
+        try { claims = verifyToken(token, { secret: this.opts.secret }); }
+        catch (_err) { /* anonymous browse */ }
+      }
+      return this.wss.handleUpgrade(req, socket, head, (ws) => {
+        this._attachLobby(ws, { claims });
+      });
+    }
+
     const tableId = extractTableId(req.url);
     if (!tableId) return rejectHttp(socket, 404, 'not_found');
 
@@ -141,6 +233,71 @@ class Gateway {
     this.wss.handleUpgrade(req, socket, head, (ws) => {
       this._attach(ws, { tableId, claims });
     });
+  }
+
+  /**
+   * Attach a lobby-only socket — receives `s2c.lobby_state` /
+   * `s2c.lobby_delta` frames, accepts `c2s.lobby_subscribe`/`unsubscribe`.
+   * Cannot send `c2s.action` / `c2s.join`.
+   */
+  _attachLobby(ws, ctx) {
+    ws._hijack = {
+      lobby: true,
+      userId: ctx.claims ? ctx.claims.userId : null,
+      isAlive: true,
+      pending: 0,
+      stakeUnsubs: new Map(),
+    };
+    ws.on('pong', () => { ws._hijack.isAlive = true; });
+    ws.on('message', (raw) => this._onLobbyMessage(ws, raw));
+    ws.on('close', () => this._detachLobby(ws));
+    ws.on('error', () => this._detachLobby(ws));
+  }
+
+  _detachLobby(ws) {
+    const meta = ws._hijack;
+    if (!meta || !meta.stakeUnsubs) return;
+    for (const off of meta.stakeUnsubs.values()) {
+      try { off(); } catch (_e) {}
+    }
+    meta.stakeUnsubs.clear();
+  }
+
+  async _onLobbyMessage(ws, raw) {
+    let msg;
+    try { msg = JSON.parse(raw.toString()); }
+    catch (_e) { return this._send(ws, mkError('bad_json', 'invalid JSON')); }
+    if (!msg || typeof msg !== 'object') {
+      return this._send(ws, mkError('bad_type', 'not an object'));
+    }
+    if (msg.t === C2S.LOBBY_SUBSCRIBE) return this._onLobbySubscribe(ws, msg);
+    if (msg.t === C2S.LOBBY_UNSUBSCRIBE) return this._onLobbyUnsubscribe(ws, msg);
+    return this._send(ws, mkError('bad_type', `unknown lobby t=${msg.t}`));
+  }
+
+  async _onLobbySubscribe(ws, msg) {
+    const stake = msg.stake;
+    if (!stake || !getStake(stake)) {
+      return this._send(ws, mkError('unknown_stake', `no stake ${stake}`));
+    }
+    const meta = ws._hijack;
+    if (meta.stakeUnsubs.has(stake)) return; // idempotent
+
+    const off = this.lobby.subscribe(stake, (frame) => this._send(ws, frame));
+    meta.stakeUnsubs.set(stake, off);
+
+    const stateFrame = await this.lobby.makeStateFrame(stake);
+    if (stateFrame) this._send(ws, stateFrame);
+  }
+
+  _onLobbyUnsubscribe(ws, msg) {
+    const stake = msg.stake;
+    const meta = ws._hijack;
+    const off = meta.stakeUnsubs.get(stake);
+    if (off) {
+      off();
+      meta.stakeUnsubs.delete(stake);
+    }
   }
 
   // ─── per-socket lifecycle ────────────────────────────────────────────
@@ -190,6 +347,13 @@ class Gateway {
       try { ws._hijack.unsubscribe(); } catch (_e) {}
       ws._hijack.unsubscribe = null;
     }
+    // Drop any lobby subscriptions this socket had piggy-backed on.
+    if (ws._hijack?.stakeUnsubs) {
+      for (const off of ws._hijack.stakeUnsubs.values()) {
+        try { off(); } catch (_e) {}
+      }
+      ws._hijack.stakeUnsubs.clear();
+    }
   }
 
   async _onMessage(ws, raw) {
@@ -208,12 +372,45 @@ class Gateway {
       return;
     }
     if (msg.t === C2S.ACTION) return this._onAction(ws, msg);
+    if (msg.t === C2S.LOBBY_SUBSCRIBE || msg.t === C2S.LOBBY_UNSUBSCRIBE) {
+      // Allow table-bound sockets to also subscribe to lobby deltas — same
+      // handler set as the lobby-only path.
+      if (!ws._hijack.stakeUnsubs) ws._hijack.stakeUnsubs = new Map();
+      if (msg.t === C2S.LOBBY_SUBSCRIBE) return this._onLobbySubscribe(ws, msg);
+      return this._onLobbyUnsubscribe(ws, msg);
+    }
   }
 
   async _onJoin(ws, msg) {
     const { tableId } = ws._hijack;
     if (msg.tableId !== tableId) {
       return this._send(ws, mkError('table_mismatch', 'join tableId differs from URL'));
+    }
+    // Phase 3 — optional join-token confirm flow. Spectators may join
+    // without a token (no seat binding); seated players MUST present
+    // a token whose tableId/seat match the seat reservation in Redis.
+    if (msg.joinToken && this.seatClaimer) {
+      try {
+        const claims = this.seatClaimer.verifyJoinToken(msg.joinToken);
+        if (claims.tableId !== tableId) {
+          return this._send(ws, mkError('join_token_table_mismatch', 'token tableId mismatch'));
+        }
+        // Cross-check the live seat reservation hash to defend against a
+        // stale token after an admin-forced clear.
+        const seatsRaw = await this.opts.redis.hget(`table:${tableId}:seats`, String(claims.seat));
+        if (!seatsRaw) {
+          return this._send(ws, mkError('seat_not_reserved', 'no live reservation'));
+        }
+        const parts = String(seatsRaw).split('|');
+        if (parts[1] !== claims.reservationToken) {
+          return this._send(ws, mkError('seat_token_mismatch', 'token superseded'));
+        }
+        ws._hijack.seat = claims.seat;
+        ws._hijack.boundUserId = String(claims.sub);
+        ws._hijack.bound = true;
+      } catch (err) {
+        return this._send(ws, mkError('bad_join_token', err.message));
+      }
     }
     try {
       const plan = await planResume({

@@ -17,6 +17,8 @@
  * route to the right per-table listener set.
  */
 
+const { verify } = require('@hijack/protocol/sign');
+
 const channelPattern = 'table:*:events';
 const channelFor = (tableId) => `table:${tableId}:events`;
 
@@ -28,6 +30,16 @@ class RedisBus {
    * @param {() => import('ioredis').Redis} opts.subscriberFactory
    *        Factory yielding a fresh ioredis connection. We need a
    *        *new* connection — pub/sub mode is exclusive on a connection.
+   * @param {string} [opts.publishSecret]
+   *        When set, every received message is HMAC-verified. Mismatched
+   *        or missing-when-enforced messages are dropped silently and
+   *        logged. Defaults to off (no enforcement) so existing tests
+   *        and dev environments don't need to know about the env var.
+   * @param {(...args: any[]) => void} [opts.log]
+   * @param {boolean} [opts.enforceSig]
+   *        When true (or `WORKER_PUBLISH_ENFORCE=1`), unsigned messages
+   *        are also dropped. Recommended in production once both ends
+   *        share the secret; safer to leave off during rollout.
    */
   constructor(opts) {
     this.subFactory = opts.subscriberFactory;
@@ -35,6 +47,11 @@ class RedisBus {
     this.listeners = new Map();
     this.subscriber = null;
     this.subscribed = false;
+    this.publishSecret = opts.publishSecret || null;
+    this.enforceSig = opts.enforceSig != null
+      ? !!opts.enforceSig
+      : (process.env.WORKER_PUBLISH_ENFORCE === '1');
+    this.log = opts.log || (() => {});
   }
 
   async start() {
@@ -49,6 +66,13 @@ class RedisBus {
       if (!set || set.size === 0) return;
       let parsed;
       try { parsed = JSON.parse(payload); } catch (_e) { return; }
+      if (this.publishSecret) {
+        const result = verify(parsed, this.publishSecret, { enforce: this.enforceSig });
+        if (!result.ok) {
+          this.log('publish_sig_rejected', { tableId, reason: result.reason });
+          return;
+        }
+      }
       for (const fn of set) {
         try { fn(parsed); } catch (_e) { /* swallow — bus must not die */ }
       }

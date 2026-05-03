@@ -113,12 +113,16 @@ export function useGameStateWS({ stake = '1-2', playerId, username, tableId: for
   const [mySeat, setMySeat] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [connectNonce, setConnectNonce] = useState(0)
   const wsRef = useRef<WebSocket | null>(null)
   const connectingRef = useRef(false)
+  const reconnectAvoidSeatsRef = useRef<number[] | null>(null)
 
   const connect = useCallback(async () => {
     if (connectingRef.current || wsRef.current) return
     connectingRef.current = true
+    const reconnectAvoidSeats = reconnectAvoidSeatsRef.current
+    reconnectAvoidSeatsRef.current = null
     setLoading(true)
     setError(null)
     // Reset table-specific state so the previous session's snapshot
@@ -209,24 +213,35 @@ export function useGameStateWS({ stake = '1-2', playerId, username, tableId: for
       for (let attempt = 0; attempt <= maxFallbacks; attempt += 1) {
         if (!attemptTable) break
         let claimed: { joinToken: string; seat: number } | null = null
+        const avoid = new Set(reconnectAvoidSeats ?? [])
+        const preferredSeats: number[] = []
+        const fallbackSeats: number[] = []
         for (let s = 1; s <= attemptMaxSeats; s += 1) {
-          try {
-            const claimRes = await fetch(`${GATEWAY_HTTP}/seat-claim`, {
-              method: 'POST',
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({
-                stake,
-                tableId: attemptTable,
-                seat: s,
-                userId: playerId,
-              }),
-            })
-            if (claimRes.ok) {
-              const claim = await claimRes.json()
-              claimed = { joinToken: claim.joinToken, seat: s }
-              break
-            }
-          } catch (_e) { /* try next seat */ }
+          if (avoid.has(s)) fallbackSeats.push(s)
+          else preferredSeats.push(s)
+        }
+        const seatPasses = [preferredSeats, fallbackSeats]
+        for (const seatList of seatPasses) {
+          if (claimed) break
+          for (const s of seatList) {
+            try {
+              const claimRes = await fetch(`${GATEWAY_HTTP}/seat-claim`, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({
+                  stake,
+                  tableId: attemptTable,
+                  seat: s,
+                  userId: playerId,
+                }),
+              })
+              if (claimRes.ok) {
+                const claim = await claimRes.json()
+                claimed = { joinToken: claim.joinToken, seat: s }
+                break
+              }
+            } catch (_e) { /* try next seat */ }
+          }
         }
         if (claimed) {
           const url = `${GATEWAY_WS}/table/${encodeURIComponent(attemptTable)}?token=${encodeURIComponent(claimed.joinToken)}`
@@ -293,7 +308,7 @@ export function useGameStateWS({ stake = '1-2', playerId, username, tableId: for
     } finally {
       connectingRef.current = false
     }
-  }, [stake, playerId, username, forceTableId, spectate])
+  }, [stake, playerId, username, forceTableId, spectate, connectNonce])
 
   useEffect(() => {
     connect()
@@ -301,7 +316,15 @@ export function useGameStateWS({ stake = '1-2', playerId, username, tableId: for
       try { wsRef.current?.close() } catch { /* */ }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stake, playerId, forceTableId, spectate])
+  }, [stake, playerId, forceTableId, spectate, connectNonce])
+
+  const reconnectWithOptions = useCallback((opts?: { avoidSeats?: number[] }) => {
+    reconnectAvoidSeatsRef.current = opts?.avoidSeats?.filter((s) => Number.isInteger(s) && s > 0) ?? null
+    try { wsRef.current?.close() } catch { /* */ }
+    wsRef.current = null
+    connectingRef.current = false
+    setConnectNonce((n) => n + 1)
+  }, [])
 
   const sendAction = useCallback(async (seat: number, action: string, amount?: number) => {
     const ws = wsRef.current
@@ -331,5 +354,6 @@ export function useGameStateWS({ stake = '1-2', playerId, username, tableId: for
     reset,
     tableId,
     mySeat,
+    reconnect: reconnectWithOptions,
   }
 }

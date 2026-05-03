@@ -2,6 +2,7 @@ import { Card, CardContent, Box, Typography, Alert, Skeleton } from '@mui/materi
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import { useRewards } from '../hooks/useRewards';
 import type { Reward } from '../types/streaks.types';
+import { createLobbyPanelSx, createLobbyPillSx, lobbyPalette } from '../styles/lobbyChrome';
 
 function formatRewardType(type: string): string {
   if (type.startsWith('login')) return 'Login';
@@ -39,7 +40,7 @@ function RewardHistory() {
 
   if (loading || !data) {
     return (
-      <Card data-testid="reward-loading">
+      <Card data-testid="reward-loading" sx={createLobbyPanelSx('#F472B6')}>
         <CardContent>
           <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
         </CardContent>
@@ -50,8 +51,8 @@ function RewardHistory() {
   const sorted = sortByDateDesc(data.rewards);
 
   return (
-    <Card data-testid="reward-history" sx={{ height: '100%' }}>
-      <CardContent>
+    <Card data-testid="reward-history" sx={createLobbyPanelSx('#F472B6')}>
+      <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
         <Box display="flex" alignItems="center" gap={1} mb={2}>
           <CardGiftcardIcon sx={{ color: '#F472B6', fontSize: 20 }} data-testid="reward-icon" />
           <Typography fontWeight={600} fontSize={16}>
@@ -68,7 +69,8 @@ function RewardHistory() {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  bgcolor: '#1F2231',
+                  bgcolor: 'rgba(20,23,32,0.86)',
+                  border: '1px solid rgba(244,114,182,0.12)',
                   borderRadius: 2.5,
                   px: 2,
                   py: 1.5,
@@ -82,9 +84,9 @@ function RewardHistory() {
                     {formatDisplayDate(reward.date)}
                   </Typography>
                 </Box>
-                <Typography sx={{ color: '#4ADE80', fontSize: 16, fontWeight: 700 }}>
+                <Box component="span" sx={createLobbyPillSx(lobbyPalette.green, 'rgba(27,94,32,0.64)')}>
                   +{reward.points}
-                </Typography>
+                </Box>
               </Box>
             ))}
           </Box>

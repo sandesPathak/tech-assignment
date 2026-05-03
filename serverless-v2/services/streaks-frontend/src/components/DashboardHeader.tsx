@@ -10,9 +10,12 @@ import ShareIcon from '@mui/icons-material/Share';
 import VipBadge from './VipBadge';
 import { useLoadingOverlay } from '../context/LoadingOverlayContext';
 import { useState } from 'react';
+import { APP_FONT_STACK } from '../theme';
+import { lobbyPalette } from '../styles/lobbyChrome';
+import type { VipTier } from '../types/streaks.types';
 
 interface DashboardHeaderProps {
-  tier: string;
+  tier: VipTier;
   data: {
     comboActive: boolean;
     comboMultiplier: number;
@@ -43,7 +46,7 @@ function DashboardHeader({ tier, data, user, todayCheckedIn, isExcluded, selfExc
       justifyContent="space-between"
       flexDirection={{ xs: 'column', sm: 'row' }}
       gap={2}
-      mb={4}
+      sx={{ position: 'relative', zIndex: 1 }}
     >
       <Box display="flex" alignItems="center" gap={1.5}>
         <FireAnimation size={36} containerWidth={64} />
@@ -53,6 +56,7 @@ function DashboardHeader({ tier, data, user, todayCheckedIn, isExcluded, selfExc
           sx={{
             fontSize: { xs: '1.5rem', sm: '2.125rem' },
             letterSpacing: -0.5,
+            fontFamily: APP_FONT_STACK,
             background: 'linear-gradient(135deg, #FFFFFF 0%, #FFE4D6 50%, #FFB199 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
@@ -69,10 +73,10 @@ function DashboardHeader({ tier, data, user, todayCheckedIn, isExcluded, selfExc
             sx={{
               fontWeight: 700,
               fontSize: 11,
-              color: '#FF6B35',
-              bgcolor: 'rgba(255,107,53,0.15)',
-              border: '1px solid rgba(255,107,53,0.3)',
-              borderRadius: 2,
+              color: lobbyPalette.orange,
+              bgcolor: 'rgba(255,107,53,0.12)',
+              border: '1px solid rgba(255,107,53,0.35)',
+              borderRadius: 999,
               animation: 'pulse 2s ease-in-out infinite',
               '@keyframes pulse': {
                 '0%, 100%': { opacity: 1 },
@@ -87,10 +91,11 @@ function DashboardHeader({ tier, data, user, todayCheckedIn, isExcluded, selfExc
               onClick={() => onShareOpen()}
               size="small"
               sx={{
-                color: '#8B8FA3',
-                border: '1px solid #2A2D3A',
-                borderRadius: 2,
-                '&:hover': { color: '#FF6B35', borderColor: '#FF6B35', bgcolor: 'rgba(255,107,53,0.08)' },
+                color: lobbyPalette.textDim,
+                border: `1px solid ${lobbyPalette.border}`,
+                borderRadius: 2.5,
+                bgcolor: 'rgba(255,255,255,0.03)',
+                '&:hover': { color: lobbyPalette.orange, borderColor: lobbyPalette.orange, bgcolor: 'rgba(255,107,53,0.08)' },
               }}
             >
               <ShareIcon sx={{ fontSize: 18 }} />
@@ -107,18 +112,20 @@ function DashboardHeader({ tier, data, user, todayCheckedIn, isExcluded, selfExc
               onClick={handlePlayPoker}
               disabled={!!isExcluded}
               sx={{
-                background: 'linear-gradient(135deg, #1B5E20, #2E7D32)',
-                borderRadius: 3,
+                background: 'linear-gradient(135deg, #1F7A2A, #2E9B40)',
+                border: '1px solid rgba(74,222,128,0.24)',
+                boxShadow: '0 14px 28px rgba(0,0,0,0.28)',
+                borderRadius: 3.5,
                 px: { xs: 2, sm: 3 },
-                py: 1.5,
-                fontWeight: 600,
+                py: 1.35,
+                fontWeight: 700,
                 textTransform: 'none',
                 flex: { xs: 1, sm: 'none' },
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #1B5E20, #388E3C)',
+                  background: 'linear-gradient(135deg, #208C30, #35B24A)',
                 },
                 '&.Mui-disabled': {
-                  color: '#8B8FA3',
+                  color: lobbyPalette.textDim,
                   background: 'linear-gradient(135deg, #2A2D3A, #2A2D3A)',
                 },
               }}
@@ -134,22 +141,26 @@ function DashboardHeader({ tier, data, user, todayCheckedIn, isExcluded, selfExc
           disabled={todayCheckedIn}
           sx={{
             background: todayCheckedIn
-              ? 'linear-gradient(135deg, #2A2D3A, #2A2D3A)'
-              : 'linear-gradient(135deg, #FF6B35, #FF4444)',
-            borderRadius: 3,
+              ? 'linear-gradient(135deg, #183123, #1C3B28)'
+              : 'linear-gradient(135deg, #FF8A1F, #FF6B35)',
+            border: todayCheckedIn
+              ? '1px solid rgba(74,222,128,0.24)'
+              : '1px solid rgba(255,138,31,0.28)',
+            boxShadow: '0 14px 28px rgba(0,0,0,0.28)',
+            borderRadius: 3.5,
             px: { xs: 2, sm: 3 },
-            py: 1.5,
-            fontWeight: 600,
+            py: 1.35,
+            fontWeight: 700,
             textTransform: 'none',
             flex: { xs: 1, sm: 'none' },
             '&:hover': {
               background: todayCheckedIn
-                ? 'linear-gradient(135deg, #2A2D3A, #2A2D3A)'
-                : 'linear-gradient(135deg, #FF5722, #E53935)',
+                ? 'linear-gradient(135deg, #183123, #1C3B28)'
+                : 'linear-gradient(135deg, #FF962D, #FF733A)',
             },
             '&.Mui-disabled': {
-              color: '#4CAF50',
-              background: 'linear-gradient(135deg, #1A2E1A, #1A2E1A)',
+              color: lobbyPalette.green,
+              background: 'linear-gradient(135deg, #183123, #1C3B28)',
               border: '1px solid rgba(76,175,80,0.3)',
             },
           }}
@@ -164,10 +175,11 @@ function DashboardHeader({ tier, data, user, todayCheckedIn, isExcluded, selfExc
             sx={{
               width: 36,
               height: 36,
-              bgcolor: '#FF6B35',
+              bgcolor: lobbyPalette.orange,
               fontSize: 15,
               fontWeight: 700,
-              border: '2px solid #2A2D3A',
+              border: `2px solid ${lobbyPalette.border}`,
+              boxShadow: '0 0 18px rgba(255,107,53,0.2)',
             }}
           >
             {(user?.displayName || user?.email || '?').charAt(0).toUpperCase()}
@@ -182,7 +194,7 @@ function DashboardHeader({ tier, data, user, todayCheckedIn, isExcluded, selfExc
           PaperProps={{
             sx: {
               bgcolor: '#1A1D27',
-              border: '1px solid #2A2D3A',
+              border: `1px solid ${lobbyPalette.border}`,
               borderRadius: 3,
               mt: 1,
               minWidth: 220,

@@ -19,6 +19,8 @@ import { useStreaks } from '../hooks/useStreaks';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../context/ToastContext';
 import { checkIn, getResponsibleGaming } from '../api/streaks.api';
+import { APP_FONT_STACK } from '../theme';
+import { createLobbyPanelSx, lobbyHeroSx, lobbyPageSx } from '../styles/lobbyChrome';
 
 function Dashboard() {
   const { data, loading, error, refetch } = useStreaks();
@@ -64,39 +66,25 @@ function Dashboard() {
   return (
     <Box
       sx={{
-        position: 'relative',
-        minHeight: '100vh',
-        bgcolor: 'background.default',
-        py: 5,
-        px: { xs: 2, md: 6 },
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'fixed',
-          inset: 0,
-          zIndex: 0,
-          pointerEvents: 'none',
-          background:
-            'radial-gradient(900px 500px at 12% 0%, rgba(255,107,53,0.10), transparent 60%),' +
-            'radial-gradient(800px 500px at 88% 0%, rgba(124,58,237,0.10), transparent 60%),' +
-            'radial-gradient(1000px 600px at 50% 110%, rgba(255,179,0,0.06), transparent 70%)',
-        },
-        '& > *': { position: 'relative', zIndex: 1 },
+        ...lobbyPageSx,
+        fontFamily: APP_FONT_STACK,
       }}
     >
       <Celebration active={celebrating} onComplete={() => setCelebrating(false)} />
       <Container maxWidth="xl" disableGutters>
-        <DashboardHeader
-          tier={tier}
-          data={data}
-          user={user}
-          todayCheckedIn={todayCheckedIn}
-          isExcluded={isExcluded}
-          selfExcludedUntil={selfExcludedUntil}
-          onCheckIn={handleCheckIn}
-          onShareOpen={() => setShareOpen(true)}
-          signOut={signOut}
-        />
+        <Box sx={lobbyHeroSx}>
+          <DashboardHeader
+            tier={tier}
+            data={data}
+            user={user}
+            todayCheckedIn={todayCheckedIn}
+            isExcluded={isExcluded}
+            selfExcludedUntil={selfExcludedUntil}
+            onCheckIn={handleCheckIn}
+            onShareOpen={() => setShareOpen(true)}
+            signOut={signOut}
+          />
+        </Box>
 
         {error && (
           <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }} data-testid="error-alert">
@@ -124,7 +112,11 @@ function Dashboard() {
           <Grid container spacing={3} data-testid="loading-skeleton">
             {[1, 2, 3].map((i) => (
               <Grid item xs={12} sm={4} key={i}>
-                <Card><CardContent><Skeleton variant="rectangular" height={80} /></CardContent></Card>
+                <Card sx={createLobbyPanelSx()}>
+                  <CardContent>
+                    <Skeleton variant="rectangular" height={80} />
+                  </CardContent>
+                </Card>
               </Grid>
             ))}
           </Grid>

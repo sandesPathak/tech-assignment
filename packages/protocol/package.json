@@ -11,7 +11,8 @@
       "default": "./src/messages.js"
     },
     "./messages": "./src/messages.js",
-    "./stakes": "./src/stakes.js"
+    "./stakes": "./src/stakes.js",
+    "./sign": "./src/sign.js"
   },
   "scripts": {
     "test": "echo \"no protocol-package tests yet\" && exit 0",

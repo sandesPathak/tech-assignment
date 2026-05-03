@@ -6,6 +6,7 @@ import StarIcon from '@mui/icons-material/Star';
 import { useMissions } from '../hooks/useMissions';
 import Celebration from './Celebration';
 import gsap from 'gsap';
+import { createLobbyInsetSx, createLobbyPanelSx, createLobbyPillSx, lobbyPalette } from '../styles/lobbyChrome';
 
 function MissionsPanel() {
   const { missions, pointsEarnedToday, loading, claimMission } = useMissions();
@@ -52,7 +53,7 @@ function MissionsPanel() {
 
   if (loading) {
     return (
-      <Card sx={{ bgcolor: '#1A1D27', border: '1px solid #2A2D3A', borderRadius: 4 }}>
+      <Card sx={createLobbyPanelSx(lobbyPalette.orange)}>
         <CardContent sx={{ p: 3 }}>
           <Skeleton variant="rectangular" height={120} sx={{ borderRadius: 2 }} />
         </CardContent>
@@ -64,24 +65,7 @@ function MissionsPanel() {
     <>
     <Celebration active={celebrating} label="CLAIMED!" onComplete={() => setCelebrating(false)} />
     <Card
-      sx={{
-        bgcolor: 'rgba(26,29,39,0.85)',
-        border: '1px solid #2A2D3A',
-        borderRadius: 4,
-        position: 'relative',
-        overflow: 'hidden',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          inset: 0,
-          pointerEvents: 'none',
-          background:
-            'radial-gradient(closest-side at 0% 0%, rgba(255,107,53,0.12), transparent 60%),' +
-            'radial-gradient(closest-side at 100% 100%, rgba(124,58,237,0.10), transparent 60%)',
-        },
-      }}
+      sx={createLobbyPanelSx(lobbyPalette.orange)}
     >
       <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
@@ -95,13 +79,7 @@ function MissionsPanel() {
             icon={<StarIcon sx={{ fontSize: 14 }} />}
             label={`${pointsEarnedToday} pts today`}
             size="small"
-            sx={{
-              bgcolor: 'rgba(255,215,0,0.10)',
-              border: '1px solid rgba(255,215,0,0.3)',
-              color: '#FFD700',
-              fontWeight: 700,
-              fontSize: 11,
-            }}
+            sx={createLobbyPillSx(lobbyPalette.gold, 'rgba(251,191,36,0.10)')}
           />
         </Box>
 
@@ -127,23 +105,12 @@ function MissionsPanel() {
                 key={mission.missionId}
                 data-mission
                 sx={{
+                  ...createLobbyInsetSx(barColor, isClaimed ? 'rgba(20,49,31,0.66)' : isCompleted ? 'rgba(57,42,8,0.72)' : 'rgba(12,14,22,0.76)'),
                   p: 2,
                   pl: 2.25,
-                  borderRadius: 3,
-                  bgcolor: isClaimed ? 'rgba(74,222,128,0.06)' : isCompleted ? 'rgba(255,179,0,0.08)' : 'rgba(20,23,32,0.85)',
-                  border: `1px solid ${accentBorder}`,
                   opacity: 0,
-                  position: 'relative',
-                  overflow: 'hidden',
                   transition: 'transform .2s, border-color .2s',
                   '&:hover': { transform: 'translateY(-2px)', borderColor: barColor },
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    left: 0, top: 0, bottom: 0, width: 3,
-                    background: barGradient,
-                    boxShadow: `0 0 8px ${barColor}80`,
-                  },
                 }}
               >
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
@@ -154,13 +121,7 @@ function MissionsPanel() {
                   <Chip
                     label={`+${mission.reward}`}
                     size="small"
-                    sx={{
-                      height: 20,
-                      fontSize: 11,
-                      fontWeight: 700,
-                      bgcolor: isClaimed ? '#1B5E20' : '#2A2D3A',
-                      color: isClaimed ? '#4ADE80' : '#FFD700',
-                    }}
+                    sx={createLobbyPillSx(isClaimed ? lobbyPalette.green : lobbyPalette.gold, isClaimed ? 'rgba(27,94,32,0.7)' : 'rgba(42,45,58,0.8)')}
                   />
                 </Box>
                 <Typography sx={{ fontSize: 11, color: '#8B8FA3', mb: 1 }}>

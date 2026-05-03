@@ -1,5 +1,6 @@
 import { Card, CardContent, Box, Typography, Chip } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import { createLobbyIconTileSx, createLobbyPanelSx, lobbyPalette } from '../styles/lobbyChrome';
 
 export interface PersonalBestProps {
   bestLoginStreak: number;
@@ -20,36 +21,11 @@ function PersonalBest({
   return (
     <Card
       data-testid="personal-best"
-      sx={{
-        position: 'relative',
-        overflow: 'hidden',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-        bgcolor: 'rgba(26,29,39,0.85)',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          inset: 0,
-          pointerEvents: 'none',
-          background: 'radial-gradient(closest-side at 0% 0%, rgba(255,215,0,0.10), transparent 60%)',
-        },
-      }}
+      sx={createLobbyPanelSx(lobbyPalette.gold)}
     >
-      <CardContent sx={{ position: 'relative', zIndex: 1 }}>
+      <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
         <Box display="flex" alignItems="center" gap={2} mb={2}>
-          <Box
-            sx={{
-              width: 44,
-              height: 44,
-              borderRadius: 2.5,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'linear-gradient(180deg, rgba(255,215,0,0.15), rgba(251,191,36,0.06))',
-              border: '1px solid rgba(255,215,0,0.3)',
-              boxShadow: '0 0 18px rgba(255,215,0,0.18), inset 0 1px 0 rgba(255,255,255,0.05)',
-            }}
-          >
+          <Box sx={{ ...createLobbyIconTileSx(lobbyPalette.gold, 'linear-gradient(180deg, rgba(255,215,0,0.15), rgba(251,191,36,0.06))'), width: 44, height: 44, borderRadius: 2.5 }}>
             <EmojiEventsIcon sx={{ fontSize: 26, color: '#FFD700', filter: 'drop-shadow(0 0 6px rgba(255,215,0,0.8))' }} data-testid="trophy-icon" />
           </Box>
           <Typography variant="h6" fontWeight={800} sx={{ letterSpacing: -0.3 }}>
@@ -65,9 +41,16 @@ function PersonalBest({
             {isLoginBest && (
               <Chip
                 label="Current best!"
-                color="success"
                 size="small"
                 data-testid="login-best-indicator"
+                sx={{
+                  height: 24,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: lobbyPalette.green,
+                  bgcolor: 'rgba(74,222,128,0.12)',
+                  border: '1px solid rgba(74,222,128,0.32)',
+                }}
               />
             )}
           </Box>
@@ -79,9 +62,16 @@ function PersonalBest({
             {isPlayBest && (
               <Chip
                 label="Current best!"
-                color="success"
                 size="small"
                 data-testid="play-best-indicator"
+                sx={{
+                  height: 24,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: lobbyPalette.green,
+                  bgcolor: 'rgba(74,222,128,0.12)',
+                  border: '1px solid rgba(74,222,128,0.32)',
+                }}
               />
             )}
           </Box>

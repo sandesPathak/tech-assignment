@@ -98,11 +98,6 @@ const ORDERED_POSITIONS = [
 const CANVAS_W = 700;
 const CANVAS_H = 440;
 
-const cardSlide = keyframes`
-  0% { transform: translateY(-20px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
-`;
-
 const POT_CENTER = { top: CANVAS_H * 0.55, left: CANVAS_W * 0.5 };
 const flyToPot = (fromTop: number, fromLeft: number) => keyframes`
   0% { transform: translate(${fromLeft - POT_CENTER.left}px, ${fromTop - POT_CENTER.top}px) scale(1); opacity: 1; }
@@ -270,13 +265,12 @@ function PokerTable({ tableState, timerProgress, timeLeft, heroPlayerId, heroDis
               transform: 'translate(-50%, -50%)',
               display: 'flex',
               gap: 0.5,
-              animation: hasCards ? `${cardSlide} 0.5s ease-out` : 'none',
             }}
           >
             {hasCards ? (
-              <CardGroup cards={game.communityCards} totalSlots={5} size="small" />
+              <CardGroup cards={game.communityCards} totalSlots={5} size="small" animateDeal={false} />
             ) : (
-              <CardGroup cards={[]} totalSlots={5} size="small" />
+              <CardGroup cards={[]} totalSlots={5} size="small" animateDeal={false} />
             )}
           </Box>
 

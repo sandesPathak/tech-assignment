@@ -6,9 +6,10 @@ interface CardGroupProps {
   faceDown?: boolean;
   totalSlots?: number;
   size?: 'small' | 'medium';
+  animateDeal?: boolean;
 }
 
-function CardGroup({ cards, faceDown, totalSlots, size = 'medium' }: CardGroupProps) {
+function CardGroup({ cards, faceDown, totalSlots, size = 'medium', animateDeal = true }: CardGroupProps) {
   const slots = totalSlots ?? cards.length;
 
   return (
@@ -20,6 +21,7 @@ function CardGroup({ cards, faceDown, totalSlots, size = 'medium' }: CardGroupPr
           faceDown={faceDown && i < cards.length}
           size={size}
           index={i}
+          animateDeal={animateDeal}
         />
       ))}
     </Box>

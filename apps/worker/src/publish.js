@@ -22,6 +22,7 @@
 
 const { S2C } = require('@hijack/protocol/messages');
 const { injectTraceContext } = require('@hijack/observability/tracing');
+const { sign } = require('@hijack/protocol/sign');
 
 const channelFor = (tableId) => `table:${tableId}:events`;
 const HAND_COMPLETED_CHANNEL = 'hand:completed';
@@ -31,10 +32,20 @@ class Publisher {
    * @param {object} opts
    * @param {import('ioredis').Redis} opts.redis  command client (used to PUBLISH)
    * @param {(...args: any[]) => void} [opts.log]
+   * @param {string} [opts.signSecret]   override WORKER_PUBLISH_SECRET env
    */
   constructor(opts) {
     this.redis = opts.redis;
     this.log = opts.log || (() => {});
+    // When set, every published payload is HMAC-SHA256 signed so the
+    // gateway can refuse forged messages from anything else holding
+    // Redis credentials. No-op if unset.
+    this.signSecret = opts.signSecret || process.env.WORKER_PUBLISH_SECRET || null;
+  }
+
+  _sign(msg) {
+    if (!this.signSecret) return msg;
+    return sign(msg, this.signSecret);
   }
 
   /**
@@ -54,6 +65,7 @@ class Publisher {
     // Stamp the active span's traceparent so the gateway can extract it
     // and continue the same trace across the Redis pub/sub boundary.
     injectTraceContext(msg, ev.traceparent);
+    this._sign(msg);
     try {
       await this.redis.publish(channelFor(tableId), JSON.stringify(msg));
     } catch (err) {
@@ -84,6 +96,7 @@ class Publisher {
       },
     };
     injectTraceContext(msg);
+    this._sign(msg);
     try {
       await this.redis.publish(channelFor(tableId), JSON.stringify(msg));
     } catch (err) {
@@ -117,6 +130,7 @@ class Publisher {
       players: Array.isArray(ev.players) ? ev.players : [],
     };
     injectTraceContext(msg);
+    this._sign(msg);
     try {
       await this.redis.publish(HAND_COMPLETED_CHANNEL, JSON.stringify(msg));
     } catch (err) {

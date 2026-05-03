@@ -4,6 +4,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useLeaderboard } from '../hooks/useLeaderboard';
 import type { VipTier } from '../types/streaks.types';
 import gsap from 'gsap';
+import { createLobbyPanelSx, createLobbyPillSx, lobbyPalette } from '../styles/lobbyChrome';
 
 const TIER_COLORS: Record<VipTier, string> = {
   bronze: '#CD7F32',
@@ -41,7 +42,7 @@ function LeaderboardPanel() {
 
   if (loading) {
     return (
-      <Card sx={{ bgcolor: '#1A1D27', border: '1px solid #2A2D3A', borderRadius: 4 }}>
+      <Card sx={createLobbyPanelSx(lobbyPalette.gold)}>
         <CardContent sx={{ p: 3 }}>
           <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
         </CardContent>
@@ -50,8 +51,8 @@ function LeaderboardPanel() {
   }
 
   return (
-    <Card sx={{ bgcolor: '#1A1D27', border: '1px solid #2A2D3A', borderRadius: 4 }}>
-      <CardContent sx={{ p: 3 }}>
+    <Card sx={createLobbyPanelSx(lobbyPalette.gold)}>
+      <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
         <Box display="flex" alignItems="center" gap={1} mb={2}>
           <EmojiEventsIcon sx={{ color: '#FFD700', fontSize: 24 }} />
           <Typography variant="h6" fontWeight={700} color="#fff">
@@ -88,8 +89,8 @@ function LeaderboardPanel() {
                   gap: 1.5,
                   p: 1,
                   borderRadius: 2,
-                  bgcolor: isMe ? 'rgba(255,107,53,0.1)' : '#141720',
-                  border: isMe ? '1px solid rgba(255,107,53,0.3)' : '1px solid transparent',
+                  bgcolor: isMe ? 'rgba(255,107,53,0.1)' : 'rgba(20,23,32,0.86)',
+                  border: isMe ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(255,255,255,0.04)',
                   opacity: 0,
                 }}
               >
@@ -124,7 +125,7 @@ function LeaderboardPanel() {
                 <Chip
                   label={entry.score}
                   size="small"
-                  sx={{ height: 22, fontSize: 12, fontWeight: 700, bgcolor: '#2A2D3A', color: '#FFD700' }}
+                  sx={createLobbyPillSx(lobbyPalette.gold, 'rgba(42,45,58,0.82)')}
                 />
               </Box>
             );
@@ -159,7 +160,7 @@ function LeaderboardPanel() {
               <Chip
                 label={playerRank.score}
                 size="small"
-                sx={{ height: 22, fontSize: 12, fontWeight: 700, bgcolor: '#2A2D3A', color: '#FFD700' }}
+                sx={createLobbyPillSx(lobbyPalette.gold, 'rgba(42,45,58,0.82)')}
               />
             </Box>
           </Box>

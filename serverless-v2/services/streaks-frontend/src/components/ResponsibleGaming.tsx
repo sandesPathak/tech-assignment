@@ -7,6 +7,7 @@ import {
 import ShieldIcon from '@mui/icons-material/Shield';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { getResponsibleGaming, updateResponsibleGaming, selfExclude } from '../api/streaks.api';
+import { createLobbyInsetSx, createLobbyPanelSx, lobbyPalette } from '../styles/lobbyChrome';
 
 function ResponsibleGaming() {
   const [settings, setSettings] = useState({
@@ -53,8 +54,8 @@ function ResponsibleGaming() {
 
   return (
     <>
-      <Card sx={{ bgcolor: '#1A1D27', border: '1px solid #2A2D3A', borderRadius: 4 }}>
-        <CardContent sx={{ p: 3 }}>
+      <Card sx={createLobbyPanelSx(lobbyPalette.green)}>
+        <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
           <Box display="flex" alignItems="center" gap={1} mb={2}>
             <ShieldIcon sx={{ color: '#4ADE80', fontSize: 24 }} />
             <Typography variant="h6" fontWeight={700} color="#fff">
@@ -76,7 +77,7 @@ function ResponsibleGaming() {
 
           <Box display="flex" flexDirection="column" gap={2}>
             {/* Session Limit */}
-            <Box sx={{ p: 2, borderRadius: 2, bgcolor: '#141720', border: '1px solid #2A2D3A' }}>
+            <Box sx={{ ...createLobbyInsetSx(lobbyPalette.green, 'rgba(20,23,32,0.86)'), p: 2 }}>
               <Typography sx={{ fontSize: 13, fontWeight: 600, color: '#fff', mb: 1 }}>
                 Session Time Limit
               </Typography>
@@ -106,7 +107,7 @@ function ResponsibleGaming() {
             </Box>
 
             {/* Play Reminders */}
-            <Box sx={{ p: 2, borderRadius: 2, bgcolor: '#141720', border: '1px solid #2A2D3A' }}>
+            <Box sx={{ ...createLobbyInsetSx(lobbyPalette.green, 'rgba(20,23,32,0.86)'), p: 2 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -126,7 +127,7 @@ function ResponsibleGaming() {
             </Box>
 
             {/* Self-Exclusion */}
-            <Box sx={{ p: 2, borderRadius: 2, bgcolor: '#141720', border: '1px solid rgba(239,83,80,0.2)' }}>
+            <Box sx={{ ...createLobbyInsetSx(lobbyPalette.red, 'rgba(20,23,32,0.86)'), p: 2 }}>
               <Typography sx={{ fontSize: 13, fontWeight: 600, color: '#EF5350', mb: 0.5 }}>
                 Self-Exclusion
               </Typography>

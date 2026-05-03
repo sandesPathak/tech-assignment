@@ -40,7 +40,7 @@ function PokerGame() {
     return generated
   })
   const displayName = (user?.displayName?.trim() || localStorage.getItem('displayName') || 'Hero')
-  const { tableState, loading, error, sendAction, mySeat, tableId: connectedTableId } = useGameStateWS({
+  const { tableState, loading, error, sendAction, mySeat, tableId: connectedTableId, reconnect } = useGameStateWS({
     stake,
     playerId,
     username: displayName,
@@ -63,11 +63,14 @@ function PokerGame() {
     return h
   }, [ADMIN_TOKEN])
 
-  const heroInTable = !!tableState?.players.some(
-    (p) =>
-      (mySeat != null && Number(p.seat) === Number(mySeat))
-      || String(p.playerId) === String(playerId),
+  const heroById = tableState?.players.find((p) => String(p.playerId) === String(playerId)) ?? null
+  const heroOwnsClaimedSeat = !!(
+    mySeat != null
+    && tableState?.players.some(
+      (p) => Number(p.seat) === Number(mySeat) && String(p.playerId) === String(playerId),
+    )
   )
+  const heroInTable = !!heroById || heroOwnsClaimedSeat
   const isSeatedPlayer = !spectate && mySeat != null && heroInTable
   const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false)
   const pendingLeaveActionRef = useRef<null | (() => void)>(null)
@@ -124,6 +127,42 @@ function PokerGame() {
   // Manual "Spawn Bots" button. Endpoint dedupes per-table within 30s,
   // so we mirror that lock client-side to keep the button visibly busy.
   const [spawning, setSpawning] = useState(false)
+
+  // Self-heal on entry: if we have a claimed seat but our player row
+  // never appears in tableState, force a reconnect/seat-claim cycle.
+  const rejoinAttemptsRef = useRef(0)
+  const rejoinTimerRef = useRef<number | null>(null)
+  const missingSinceRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (rejoinTimerRef.current) {
+      window.clearTimeout(rejoinTimerRef.current)
+      rejoinTimerRef.current = null
+    }
+    if (spectate || loading || !tableState || mySeat == null) return
+    if (heroInTable) {
+      rejoinAttemptsRef.current = 0
+      missingSinceRef.current = null
+      return
+    }
+    if (missingSinceRef.current == null) missingSinceRef.current = Date.now()
+    const missingMs = Date.now() - missingSinceRef.current
+    // Give gateway /sit retries time to settle first. Reconnecting too
+    // early can cancel the in-flight seat sync and trap users in limbo.
+    if (missingMs < 12_000) return
+    if (rejoinAttemptsRef.current >= 3) return
+    const delayMs = 2000 + rejoinAttemptsRef.current * 3000
+    rejoinTimerRef.current = window.setTimeout(() => {
+      rejoinAttemptsRef.current += 1
+      addEntry('Rejoining seat…', 'info')
+      reconnect({ avoidSeats: mySeat != null ? [Number(mySeat)] : [] })
+    }, delayMs)
+    return () => {
+      if (rejoinTimerRef.current) {
+        window.clearTimeout(rejoinTimerRef.current)
+        rejoinTimerRef.current = null
+      }
+    }
+  }, [spectate, loading, tableState, mySeat, heroInTable, reconnect, addEntry])
 
   const handleSpawnBots = useCallback(async () => {
     const targetTableId = connectedTableId || requestedTableId
@@ -398,8 +437,8 @@ function PokerGame() {
             heroSeat={
               spectate
                 ? null
-                : mySeat
-                  ?? tableState.players.find((p) => String(p.playerId) === String(playerId))?.seat
+                : tableState.players.find((p) => String(p.playerId) === String(playerId))?.seat
+                  ?? (heroOwnsClaimedSeat ? mySeat : null)
                   ?? null
             }
             tableId={connectedTableId || requestedTableId}

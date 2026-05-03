@@ -57,6 +57,9 @@ const {
 const HEARTBEAT_INTERVAL_MS = 30_000;
 const BACKPRESSURE_LIMIT = 100; // messages queued
 const MAX_INBOUND_BYTES = 64 * 1024;
+const MAX_BUFFERED_BYTES = 1024 * 1024; // 1 MB outbound buffer ceiling
+const DEFAULT_MAX_CONNS_PER_USER = 50;
+const DEFAULT_MAX_CONNS_PER_IP = 100;
 const SHARD_SATURATION_THRESHOLD = DEFAULT_SATURATION_PCT; // 80%
 
 /**
@@ -88,11 +91,22 @@ class Gateway {
     // resolver or default to a single shard.
     this.resolveShardId = opts.resolveShardId || (() => process.env.SHARD_ID || 'shard-0');
     this.shardSaturationThreshold = opts.shardSaturationThreshold ?? SHARD_SATURATION_THRESHOLD;
-    this.bus = new RedisBus({ subscriberFactory: opts.subscriberFactory });
+    this.bus = new RedisBus({
+      subscriberFactory: opts.subscriberFactory,
+      publishSecret: opts.publishSecret || process.env.WORKER_PUBLISH_SECRET || null,
+      log: this.log,
+    });
     /** @type {Map<string, Set<object>>} sockets by tableId */
     this.byTable = new Map();
     /** @type {Map<string, number>} highest seq we've forwarded per table */
     this.tableSeq = new Map();
+    /** @type {Map<string, Set<object>>} sockets by userId — connection cap */
+    this.byUser = new Map();
+    /** @type {Map<string, number>} connection count by remote IP */
+    this.byIp = new Map();
+    this.maxConnsPerUser = Number(opts.maxConnsPerUser || process.env.MAX_CONNECTIONS_PER_USER || DEFAULT_MAX_CONNS_PER_USER);
+    this.maxConnsPerIp = Number(opts.maxConnsPerIp || process.env.MAX_CONNECTIONS_PER_IP || DEFAULT_MAX_CONNS_PER_IP);
+    this.maxBufferedBytes = Number(opts.maxBufferedBytes || MAX_BUFFERED_BYTES);
     this.httpServer = null;
     this.wss = null;
     this.heartbeatTimer = null;
@@ -630,6 +644,20 @@ class Gateway {
         return rejectHttp(socket, 403, 'forbidden_origin');
       }
     }
+    // Per-IP connection cap. Bypass loopback because the bot swarm spawns
+    // from the same host and would otherwise self-DoS. Trusted callers
+    // (admin token) also bypass — used by the operator console.
+    const remoteIp = (req.socket && req.socket.remoteAddress) || 'unknown';
+    const isLoopbackIp = remoteIp === '127.0.0.1' || remoteIp === '::1' || remoteIp === '::ffff:127.0.0.1';
+    const adminTokenEnv = process.env.ADMIN_TOKEN;
+    const hasAdmin = adminTokenEnv && req.headers['x-admin-token'] === adminTokenEnv;
+    if (!isLoopbackIp && !hasAdmin && this.maxConnsPerIp > 0) {
+      const cur = this.byIp.get(remoteIp) || 0;
+      if (cur >= this.maxConnsPerIp) {
+        this.log('ws_upgrade_ip_cap', { ip: remoteIp, current: cur, max: this.maxConnsPerIp });
+        return rejectHttp(socket, 429, 'too_many_connections');
+      }
+    }
     const path = (req.url || '').split('?')[0];
 
     // Lobby upgrade — no table binding. Token is optional; if supplied
@@ -642,7 +670,7 @@ class Gateway {
         catch (_err) { /* anonymous browse */ }
       }
       return this.wss.handleUpgrade(req, socket, head, (ws) => {
-        this._attachLobby(ws, { claims });
+        this._attachLobby(ws, { claims, remoteIp, ipCounted: !isLoopbackIp && !hasAdmin });
       });
     }
 
@@ -661,8 +689,20 @@ class Gateway {
       return rejectHttp(socket, 401, 'token_table_mismatch');
     }
 
+    // Per-userId connection cap. Spectators (sub `spec-*`) get unique IDs
+    // per token mint so the cap doesn't apply to them in practice. Skip
+    // when an admin token is present — the operator may legitimately
+    // hold many connections.
+    if (!hasAdmin && this.maxConnsPerUser > 0 && claims.userId && !String(claims.userId).startsWith('spec-')) {
+      const set = this.byUser.get(claims.userId);
+      if (set && set.size >= this.maxConnsPerUser) {
+        this.log('ws_upgrade_user_cap', { userId: claims.userId, current: set.size, max: this.maxConnsPerUser });
+        return rejectHttp(socket, 429, 'too_many_connections_for_user');
+      }
+    }
+
     this.wss.handleUpgrade(req, socket, head, (ws) => {
-      this._attach(ws, { tableId, claims });
+      this._attach(ws, { tableId, claims, remoteIp, ipCounted: !isLoopbackIp && !hasAdmin });
     });
   }
 
@@ -678,7 +718,12 @@ class Gateway {
       isAlive: true,
       pending: 0,
       stakeUnsubs: new Map(),
+      remoteIp: ctx.remoteIp || null,
+      ipCounted: !!ctx.ipCounted,
     };
+    if (ws._hijack.ipCounted && ws._hijack.remoteIp) {
+      this.byIp.set(ws._hijack.remoteIp, (this.byIp.get(ws._hijack.remoteIp) || 0) + 1);
+    }
     ws.on('pong', () => { ws._hijack.isAlive = true; });
     ws.on('message', (raw) => this._onLobbyMessage(ws, raw));
     ws.on('close', () => this._detachLobby(ws));
@@ -687,7 +732,14 @@ class Gateway {
 
   _detachLobby(ws) {
     const meta = ws._hijack;
-    if (!meta || !meta.stakeUnsubs) return;
+    if (!meta) return;
+    if (meta.ipCounted && meta.remoteIp) {
+      const cur = (this.byIp.get(meta.remoteIp) || 0) - 1;
+      if (cur <= 0) this.byIp.delete(meta.remoteIp);
+      else this.byIp.set(meta.remoteIp, cur);
+      meta.ipCounted = false;
+    }
+    if (!meta.stakeUnsubs) return;
     for (const off of meta.stakeUnsubs.values()) {
       try { off(); } catch (_e) {}
     }
@@ -744,7 +796,22 @@ class Gateway {
       pending: 0,
       joined: false,
       unsubscribe: null,
+      remoteIp: ctx.remoteIp || null,
+      ipCounted: !!ctx.ipCounted,
+      userCounted: false,
     };
+    if (ws._hijack.ipCounted && ws._hijack.remoteIp) {
+      this.byIp.set(ws._hijack.remoteIp, (this.byIp.get(ws._hijack.remoteIp) || 0) + 1);
+    }
+    if (ctx.claims.userId && !String(ctx.claims.userId).startsWith('spec-')) {
+      let userSet = this.byUser.get(ctx.claims.userId);
+      if (!userSet) {
+        userSet = new Set();
+        this.byUser.set(ctx.claims.userId, userSet);
+      }
+      userSet.add(ws);
+      ws._hijack.userCounted = true;
+    }
 
     ws.on('pong', () => { ws._hijack.isAlive = true; });
     ws.on('message', (raw) => this._onMessage(ws, raw));
@@ -775,6 +842,20 @@ class Gateway {
           sessionId: ws._hijack.sessionId,
         }
       : null;
+    if (ws._hijack && ws._hijack.ipCounted && ws._hijack.remoteIp) {
+      const cur = (this.byIp.get(ws._hijack.remoteIp) || 0) - 1;
+      if (cur <= 0) this.byIp.delete(ws._hijack.remoteIp);
+      else this.byIp.set(ws._hijack.remoteIp, cur);
+      ws._hijack.ipCounted = false;
+    }
+    if (ws._hijack && ws._hijack.userCounted && ws._hijack.userId) {
+      const userSet = this.byUser.get(ws._hijack.userId);
+      if (userSet) {
+        userSet.delete(ws);
+        if (userSet.size === 0) this.byUser.delete(ws._hijack.userId);
+      }
+      ws._hijack.userCounted = false;
+    }
     if (ws._hijack) ws._hijack.joined = false;
     if (tableId) {
       const set = this.byTable.get(tableId);
@@ -1188,8 +1269,13 @@ class Gateway {
     if (ws.readyState !== ws.OPEN) return;
     const meta = ws._hijack;
     if (!meta) return;
-    if (meta.pending >= this.backpressureLimit) {
-      this.log('backpressure_drop', { tableId: meta.tableId, pending: meta.pending });
+    if (meta.pending >= this.backpressureLimit
+      || (typeof ws.bufferedAmount === 'number' && ws.bufferedAmount > this.maxBufferedBytes)) {
+      this.log('backpressure_drop', {
+        tableId: meta.tableId,
+        pending: meta.pending,
+        buffered: ws.bufferedAmount,
+      });
       try {
         ws.send(JSON.stringify(mkKicked('backpressure_resync')));
       } catch (_e) {}
@@ -1216,8 +1302,13 @@ class Gateway {
     if (ws.readyState !== ws.OPEN) return;
     const meta = ws._hijack;
     if (!meta) return;
-    if (meta.pending >= this.backpressureLimit) {
-      this.log('backpressure_drop', { tableId: meta.tableId, pending: meta.pending });
+    if (meta.pending >= this.backpressureLimit
+      || (typeof ws.bufferedAmount === 'number' && ws.bufferedAmount > this.maxBufferedBytes)) {
+      this.log('backpressure_drop', {
+        tableId: meta.tableId,
+        pending: meta.pending,
+        buffered: ws.bufferedAmount,
+      });
       try { ws.send(JSON.stringify(mkKicked('backpressure_resync'))); } catch (_e) {}
       try { ws.close(1013, 'backpressure'); } catch (_e) {}
       return;

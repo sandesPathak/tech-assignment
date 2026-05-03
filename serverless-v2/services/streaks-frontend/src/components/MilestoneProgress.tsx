@@ -1,6 +1,7 @@
 import { Card, CardContent, Box, Typography, Chip } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import type { NextMilestone } from '../types/streaks.types';
+import { createLobbyPanelSx, createLobbyPillSx, lobbyPalette } from '../styles/lobbyChrome';
 
 export interface MilestoneProgressProps {
   type: 'login' | 'play';
@@ -27,7 +28,7 @@ function MilestoneProgress({ type, currentStreak, nextMilestone }: MilestoneProg
 
   if (!nextMilestone) {
     return (
-      <Card data-testid={`milestone-progress-${type}`}>
+      <Card data-testid={`milestone-progress-${type}`} sx={createLobbyPanelSx(badgeColor)}>
         <CardContent>
           <Box display="flex" alignItems="center" gap={1} mb={1}>
             <EmojiEventsIcon sx={{ color: '#FBBF24', fontSize: 20 }} data-testid="trophy-icon" />
@@ -50,28 +51,9 @@ function MilestoneProgress({ type, currentStreak, nextMilestone }: MilestoneProg
   return (
     <Card
       data-testid={`milestone-progress-${type}`}
-      sx={{
-        position: 'relative',
-        overflow: 'hidden',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-        bgcolor: 'rgba(26,29,39,0.85)',
-        transition: 'transform .25s, border-color .25s, box-shadow .25s',
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          borderColor: `${badgeColor}55`,
-          boxShadow: `0 0 24px ${badgeColor}1A`,
-        },
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          inset: 0,
-          pointerEvents: 'none',
-          background: `radial-gradient(closest-side at 100% 0%, ${badgeColor}1F, transparent 65%)`,
-        },
-      }}
+      sx={createLobbyPanelSx(badgeColor)}
     >
-      <CardContent sx={{ position: 'relative', zIndex: 1 }}>
+      <CardContent sx={{ p: 2.5, position: 'relative', zIndex: 1 }}>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
           <Box display="flex" alignItems="center" gap={1}>
             <EmojiEventsIcon sx={{ color: '#FBBF24', fontSize: 20, filter: 'drop-shadow(0 0 6px rgba(251,191,36,0.6))' }} data-testid="trophy-icon" />
@@ -82,14 +64,7 @@ function MilestoneProgress({ type, currentStreak, nextMilestone }: MilestoneProg
           <Chip
             label={`${nextMilestone.daysRemaining} days left`}
             size="small"
-            sx={{
-              bgcolor: badgeBg,
-              border: `1px solid ${badgeColor}55`,
-              color: badgeColor,
-              fontWeight: 700,
-              fontSize: 12,
-              height: 26,
-            }}
+            sx={createLobbyPillSx(badgeColor, badgeBg)}
           />
         </Box>
 

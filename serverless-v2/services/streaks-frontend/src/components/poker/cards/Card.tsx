@@ -9,9 +9,10 @@ interface CardProps {
   faceDown?: boolean;
   size?: 'small' | 'medium';
   index?: number; // for stagger delay
+  animateDeal?: boolean;
 }
 
-function Card({ card, faceDown, size = 'medium', index = 0 }: CardProps) {
+function Card({ card, faceDown, size = 'medium', index = 0, animateDeal = true }: CardProps) {
   const w = size === 'small' ? 36 : 52;
   const h = size === 'small' ? 50 : 72;
   const fontSize = size === 'small' ? 11 : 14;
@@ -21,6 +22,10 @@ function Card({ card, faceDown, size = 'medium', index = 0 }: CardProps) {
   // Deal-in animation with GSAP
   useEffect(() => {
     if (!ref.current) return;
+    if (!animateDeal) {
+      gsap.set(ref.current, { clearProps: 'all' });
+      return;
+    }
     gsap.fromTo(ref.current,
       { scale: 0.3, rotation: -20 + Math.random() * 10, opacity: 0, y: -40 },
       {
@@ -33,7 +38,7 @@ function Card({ card, faceDown, size = 'medium', index = 0 }: CardProps) {
         ease: 'back.out(1.4)',
       }
     );
-  }, [card, faceDown, index]);
+  }, [card, faceDown, index, animateDeal]);
 
   if (!card && !faceDown) {
     return (

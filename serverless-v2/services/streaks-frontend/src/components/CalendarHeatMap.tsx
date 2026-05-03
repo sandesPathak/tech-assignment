@@ -6,6 +6,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useCalendar } from '../hooks/useCalendar';
 import type { ActivityType, CalendarDay } from '../types/streaks.types';
 import gsap from 'gsap';
+import { createLobbyPanelSx, lobbyPalette } from '../styles/lobbyChrome';
 
 const ACTIVITY_COLORS: Record<ActivityType, string> = {
   none: '#2A2D3A',
@@ -120,8 +121,8 @@ function CalendarHeatMap() {
   }, [month, loading, days]);
 
   return (
-    <Card data-testid="calendar-heat-map">
-      <CardContent>
+    <Card data-testid="calendar-heat-map" sx={createLobbyPanelSx(lobbyPalette.blue)}>
+      <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
         {/* Header with navigation */}
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2.5}>
           <Box display="flex" alignItems="center" gap={1}>
@@ -163,10 +164,7 @@ function CalendarHeatMap() {
             {/* Weekday headers */}
             <Box display="grid" gridTemplateColumns="repeat(7, 1fr)" gap="4px" mb={1}>
               {WEEKDAY_LABELS.map((day) => (
-                <Typography
-                  key={day}
-                  sx={{ textAlign: 'center', fontSize: 11, fontWeight: 500, color: '#555972' }}
-                >
+                <Typography key={day} sx={{ textAlign: 'center', fontSize: 11, fontWeight: 600, color: '#555972', letterSpacing: 0.4 }}>
                   {day}
                 </Typography>
               ))}
@@ -196,6 +194,7 @@ function CalendarHeatMap() {
                             minHeight: 40,
                             borderRadius: 2,
                             backgroundColor: getActivityColor(day.activity),
+                            border: '1px solid rgba(255,255,255,0.05)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',

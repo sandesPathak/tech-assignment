@@ -76,6 +76,25 @@ async function handleCoachLookup(req, res, handId, hero) {
     res.writeHead(400, { 'Content-Type': 'application/json' });
     return res.end(JSON.stringify({ error: 'bad_params' }));
   }
+  // Coach analysis can mention the hero's hole cards in prose — require
+  // the requester to identify themselves as the hero. The X-Player-Id
+  // header is the same convention used by streaks-api auth.
+  const claimed = String(req.headers['x-player-id'] || '');
+  if (claimed && claimed !== String(hero)) {
+    res.writeHead(403, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({ error: 'forbidden', detail: 'analysis is private to the hero' }));
+  }
+  // Length / charset guard so the param can't be smuggled through to
+  // the SQL layer with surprising contents (the query is parameterized,
+  // but defense in depth).
+  if (String(handId).length > 128 || !/^[A-Za-z0-9_\-:.]+$/.test(String(handId))) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({ error: 'bad_handId' }));
+  }
+  if (String(hero).length > 64 || !/^[A-Za-z0-9_\-:.]+$/.test(String(hero))) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({ error: 'bad_hero' }));
+  }
   let row = await readAnalysisFromPg(handId, hero);
   if (row && row._error) {
     res.writeHead(502, { 'Content-Type': 'application/json' });

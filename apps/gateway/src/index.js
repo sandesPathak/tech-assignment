@@ -21,6 +21,23 @@ async function main() {
   await initTracing({ serviceName: 'hijack-gateway' });
   const log = createLogger({ serviceName: 'hijack-gateway' });
 
+  // Hard-fail if the gateway can't sign/verify auth tokens. Otherwise
+  // misconfigured prod deploys silently fall back to no-auth on every
+  // route that depends on the JWT secret.
+  if (!process.env.GATEWAY_JWT_SECRET || process.env.GATEWAY_JWT_SECRET.length < 16) {
+    // Allow tests / local-dev to opt out by exporting an obvious dev
+    // value, but force operators to set SOMETHING.
+    if (process.env.NODE_ENV === 'production') {
+      // eslint-disable-next-line no-console
+      console.error('[gateway] FATAL: GATEWAY_JWT_SECRET unset or too short (<16 chars).');
+      process.exit(1);
+    } else {
+      // eslint-disable-next-line no-console
+      console.warn('[gateway] WARN: GATEWAY_JWT_SECRET unset or short — using insecure dev fallback.');
+      process.env.GATEWAY_JWT_SECRET = process.env.GATEWAY_JWT_SECRET || 'dev-only-insecure-secret-change-me';
+    }
+  }
+
   const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
   const redis = new Redis(redisUrl);
   const eventStore = await createHandEventStore();
@@ -86,6 +103,10 @@ async function main() {
     return run;
   }
 
+  // Track in-flight `/sit` retries so we can cancel them when the
+  // user disconnects. Key: `${tableId}|${userId}`. Value: cancel fn.
+  const pendingSits = new Map();
+
   const gateway = new Gateway({
     redis,
     subscriberFactory: () => new Redis(redisUrl),
@@ -104,23 +125,99 @@ async function main() {
       // Seated joins: insert the player into the engine state via /sit.
       // Spectator joins (seat == null) are skipped.
       if (ctx.seat != null && ctx.userId) {
-        try {
-          await fetch(`${workerUrl}/sit`, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({
-              tableId: ctx.tableId,
-              seat: ctx.seat,
-              playerId: ctx.userId,
-              username: ctx.username || ctx.userId,
-            }),
-          });
-        } catch (err) {
-          log.warn({ err: err.message, tableId: ctx.tableId }, 'sit_failed');
-        }
+        const key = `${ctx.tableId}|${ctx.userId}`;
+        // Cancel any previous retry loop for this same (table, user) —
+        // happens on a quick reconnect.
+        const prev = pendingSits.get(key);
+        if (prev) prev();
+
+        let cancelled = false;
+        let timer = null;
+        const cancel = () => {
+          cancelled = true;
+          if (timer) clearTimeout(timer);
+          pendingSits.delete(key);
+        };
+        pendingSits.set(key, cancel);
+
+        const attempt = async (tries) => {
+          if (cancelled) return;
+          let res;
+          try {
+            res = await fetch(`${workerUrl}/sit`, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({
+                tableId: ctx.tableId,
+                seat: ctx.seat,
+                playerId: ctx.userId,
+                username: ctx.username || ctx.userId,
+              }),
+            });
+          } catch (err) {
+            log.warn({ err: err.message, tableId: ctx.tableId }, 'sit_failed');
+            return;
+          }
+          if (res.ok) {
+            cancel();
+            // Nudge engine — adding a player may unblock the deal-cards
+            // gate if the table was waiting for a quorum.
+            pumpTable(ctx.tableId).catch(() => {});
+            return;
+          }
+          if (res.status === 409 && tries < 40) {
+            // Mid-hand: the seat is still held by the previous occupant
+            // (cards in hand). Try again every 3s — a hand at our pace
+            // is ~5–8s, so we'll usually land on the 1st or 2nd retry.
+            // 40 tries × 3s = 2 min hard cap to avoid leaks.
+            timer = setTimeout(() => attempt(tries + 1), 3000);
+            return;
+          }
+          // Non-409 failure or out of retries: give up but keep the
+          // socket open so the user still sees the table as a spectator.
+          log.warn(
+            { tableId: ctx.tableId, status: res.status, tries },
+            'sit_retry_exhausted',
+          );
+          cancel();
+        };
+        attempt(0).catch(() => cancel());
       }
       // Kickstart engine: advance until awaiting_action. With ≥2 seated
       // players the engine deals; with <2 it stays idle.
+      pumpTable(ctx.tableId).catch(() => {});
+    },
+    onLeave: async (ctx) => {
+      // Cancel any pending /sit retry — the user is gone, no point
+      // pestering the worker.
+      const key = `${ctx?.tableId}|${ctx?.userId}`;
+      const cancel = pendingSits.get(key);
+      if (cancel) cancel();
+      // Socket dropped while the player was seated. Tell the worker so
+      // the seat is freed in engine state AND the seat reservation in
+      // Redis is cleared — otherwise the table stalls forever waiting
+      // on a ghost (orphaned bot, browser closed, dev restart, etc).
+      if (!ctx?.tableId || !ctx.userId) return;
+      try {
+        await fetch(`${workerUrl}/leave`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ tableId: ctx.tableId, playerId: ctx.userId }),
+        });
+      } catch (err) {
+        log.warn({ err: err.message, tableId: ctx.tableId }, 'leave_failed');
+      }
+      // Also drop the lobby's seat-claim row + bump openSeats so the
+      // matchmaker / fill-table can hand the seat to a live player.
+      try {
+        const stake = await redis.hget(`table:${ctx.tableId}:meta`, 'stake');
+        if (stake) {
+          await redis.hdel(`table:${ctx.tableId}:seats`, String(ctx.seat));
+          await redis.zincrby(`lobby:${stake}:tables`, 1, ctx.tableId);
+        }
+      } catch (_e) { /* best-effort */ }
+      // Nudge the engine to advance: if the leaver was the acting player,
+      // the worker auto-folds them on next tick.
       pumpTable(ctx.tableId).catch(() => {});
     },
     log: (evt, fields) => log.warn(fields, evt),

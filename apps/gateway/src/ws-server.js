@@ -163,17 +163,46 @@ class Gateway {
    */
   async _handleHttp(req, res) {
     try {
+      // ── CORS — allowlist, not reflection ──────────────────────────
+      // Reflecting any origin with `Allow-Credentials: true` lets any
+      // page on the internet call the gateway with the user's cookies.
+      // Configure ALLOWED_ORIGINS as a comma-separated list. Default
+      // to localhost dev ports.
       const origin = req.headers.origin;
-      if (origin) {
+      const allowed = (process.env.ALLOWED_ORIGINS
+        || 'http://localhost:4001,http://localhost:3000,http://localhost:5173,http://127.0.0.1:4001,http://127.0.0.1:3000'
+      ).split(',').map((s) => s.trim()).filter(Boolean);
+      if (origin && allowed.includes(origin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
         res.setHeader('Access-Control-Allow-Credentials', 'true');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, traceparent');
+        res.setHeader(
+          'Access-Control-Allow-Headers',
+          'Content-Type, Authorization, traceparent, X-Player-Id, X-Admin-Token',
+        );
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
         res.setHeader('Vary', 'Origin');
       }
       if (req.method === 'OPTIONS') {
         res.writeHead(204);
         return res.end();
+      }
+      // ── /admin/* gate ─────────────────────────────────────────────
+      // If ADMIN_TOKEN is set, require an exact match in the
+      // X-Admin-Token header before letting the request reach a
+      // destructive handler. /admin/stats is read-only and stays open
+      // (the lobby polls it every 2s for the live-cluster card).
+      const adminPath = (req.url || '').split('?')[0];
+      const isAdminRoute = adminPath.startsWith('/admin/');
+      const isReadOnlyAdmin = adminPath === '/admin/stats';
+      if (isAdminRoute && !isReadOnlyAdmin) {
+        const expected = process.env.ADMIN_TOKEN;
+        if (expected) {
+          const supplied = req.headers['x-admin-token'];
+          if (supplied !== expected) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ error: 'unauthorized' }));
+          }
+        }
       }
       const urlPath = (req.url || '/').split('?')[0];
       if (req.method === 'GET' && urlPath === '/health') {
@@ -235,6 +264,13 @@ class Gateway {
     catch { res.writeHead(400, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ error: 'bad_json' })); }
     const total = Math.max(1, Math.min(10000, Number(parsed.total) || 100));
     const ramp = Math.max(5, Math.min(200, Number(parsed.ramp) || 50));
+    // Pre-spawn enough tables for the swarm so bots don't fail
+    // their seat-claim while waiting for the matchmaker (5s tick,
+    // threshold-of-3 — way too slow for a 10k ramp).
+    const preSpawned = await this._preSpawnTablesForSwarm(total).catch((err) => {
+      this.log('preflight_table_spawn_failed', { err: err.message });
+      return 0;
+    });
     // eslint-disable-next-line global-require
     const path = require('path');
     // eslint-disable-next-line global-require
@@ -251,7 +287,92 @@ class Gateway {
     child.unref();
     this._swarmProc = child;
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ ok: true, pid: child.pid, total, ramp }));
+    res.end(JSON.stringify({ ok: true, pid: child.pid, total, ramp, preSpawned }));
+  }
+
+  /**
+   * Synchronously provision enough tables to seat `total` bots split
+   * roughly evenly across stakes. Mirrors the matchmaker's spawn
+   * primitive (zadd lobby, hset meta, initTable, publish table_added)
+   * so the bot swarm has somewhere to land the moment it starts.
+   */
+  async _preSpawnTablesForSwarm(total) {
+    if (!this.opts.redis || !this.opts.stateStore) return 0;
+    const redis = this.opts.redis;
+    const stateStore = this.opts.stateStore;
+    const stakes = listStakes();
+    if (!stakes.length) return 0;
+    let spawned = 0;
+    const perStake = Math.ceil(total / stakes.length);
+    // eslint-disable-next-line global-require
+    const crypto = require('crypto');
+    // eslint-disable-next-line global-require
+    const { GAME_HAND } = require('@hijack/engine');
+    for (const stake of stakes) {
+      // How many tables we need at this stake to seat `perStake` bots.
+      const tablesNeeded = Math.ceil(perStake / Math.max(1, stake.maxSeats));
+      // How many we've already got — sum of openSeats / maxSeats is a
+      // rough proxy. Always spawn at least `tablesNeeded - existing`.
+      const existing = await redis.zcard(`lobby:${stake.id}:tables`);
+      const toSpawn = Math.max(0, tablesNeeded - Number(existing));
+      for (let i = 0; i < toSpawn; i += 1) {
+        const n = await redis.incr('lobby:next-table-id');
+        const tableId = `${stake.id}-${n}`;
+        const now = Date.now();
+        const meta = {
+          stake: stake.id,
+          name: `${stake.name} #${tableId}`,
+          maxSeats: String(stake.maxSeats),
+          smallBlind: String(stake.smallBlind),
+          bigBlind: String(stake.bigBlind),
+          minBuyIn: String(stake.minBuyIn),
+          maxBuyIn: String(stake.maxBuyIn),
+          lastActivityMs: String(now),
+          createdAtMs: String(now),
+        };
+        const pipe = redis.pipeline();
+        pipe.hset(`table:${tableId}:meta`, meta);
+        pipe.zadd(`lobby:${stake.id}:tables`, stake.maxSeats, tableId);
+        pipe.publish(
+          `lobby:${stake.id}:events`,
+          JSON.stringify({
+            t: 'table_added',
+            tableId,
+            name: meta.name,
+            openSeats: stake.maxSeats,
+            maxSeats: stake.maxSeats,
+            smallBlind: stake.smallBlind,
+            bigBlind: stake.bigBlind,
+          }),
+        );
+        await pipe.exec();
+        await stateStore.initTable(tableId, {
+          game: {
+            id: crypto.randomBytes(6).toString('hex'),
+            tableId,
+            gameNo: 1,
+            handStep: GAME_HAND.GAME_PREP,
+            dealerSeat: 0,
+            smallBlindSeat: 0,
+            bigBlindSeat: 0,
+            communityCards: [],
+            pot: 0,
+            currentBet: 0,
+            sidePots: [],
+            move: 0,
+            status: 'pending',
+            smallBlind: stake.smallBlind,
+            bigBlind: stake.bigBlind,
+            maxSeats: stake.maxSeats,
+            deck: [],
+            winners: [],
+          },
+          players: [],
+        });
+        spawned += 1;
+      }
+    }
+    return spawned;
   }
 
   async _handleFillTable(req, res) {
@@ -297,9 +418,18 @@ class Gateway {
 
   async _handleSwarmStop(req, res) {
     if (this._swarmProc) {
-      try { process.kill(-this._swarmProc.pid, 'SIGTERM'); }
-      catch { try { this._swarmProc.kill('SIGTERM'); } catch {} }
+      const proc = this._swarmProc;
       this._swarmProc = null;
+      // Only signal if the child is still alive — `proc.exitCode === null`
+      // means it hasn't exited yet. Avoids `kill(-pid)` racing with PID
+      // reuse and accidentally targeting an unrelated process group.
+      if (proc.exitCode === null && proc.signalCode === null && proc.pid) {
+        try {
+          // Prefer the ChildProcess.kill API which validates the pid
+          // hasn't already been reaped.
+          proc.kill('SIGTERM');
+        } catch (_e) { /* already gone */ }
+      }
     }
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true }));
@@ -344,6 +474,39 @@ class Gateway {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify({ error: 'tableId required' }));
     }
+    // Charset + length guard.
+    const safeTableId = String(tableId).slice(0, 64);
+    if (!/^[A-Za-z0-9_\-:]+$/.test(safeTableId)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'tableId_invalid' }));
+    }
+    // Reject tokens for tables that don't exist — otherwise an attacker
+    // can enumerate / pre-mint tokens for arbitrary IDs and DoS the WS
+    // upgrade path.
+    if (this.opts.redis) {
+      try {
+        const exists = await this.opts.redis.exists(`table:${safeTableId}:meta`);
+        if (!exists) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ error: 'table_not_found' }));
+        }
+      } catch (_e) { /* on redis hiccup, fall through */ }
+    }
+    // Per-IP token bucket — 10 spectator tokens / minute / IP. Stops
+    // a script from minting tokens for every table.
+    const ip = (req.socket && req.socket.remoteAddress) || 'unknown';
+    this._specTokenBuckets = this._specTokenBuckets || new Map();
+    const now = Date.now();
+    const bucket = this._specTokenBuckets.get(ip) || { tokens: 10, ts: now };
+    bucket.tokens = Math.min(10, bucket.tokens + ((now - bucket.ts) / 60_000) * 10);
+    bucket.ts = now;
+    if (bucket.tokens < 1) {
+      this._specTokenBuckets.set(ip, bucket);
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'rate_limited' }));
+    }
+    bucket.tokens -= 1;
+    this._specTokenBuckets.set(ip, bucket);
     const secret = this.opts.secret || process.env.GATEWAY_JWT_SECRET;
     if (!secret) {
       res.writeHead(503, { 'Content-Type': 'application/json' });
@@ -371,6 +534,22 @@ class Gateway {
       res.writeHead(503, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify({ error: 'seat_claim_unavailable' }));
     }
+    // Per-IP rate limit — 30 claim attempts / minute. The legitimate
+    // claim path on join is at most ~6 tries (one per seat). Anything
+    // above that is a script trying to brute-force occupancy.
+    const ip = (req.socket && req.socket.remoteAddress) || 'unknown';
+    this._claimBuckets = this._claimBuckets || new Map();
+    const now = Date.now();
+    const bucket = this._claimBuckets.get(ip) || { tokens: 30, ts: now };
+    bucket.tokens = Math.min(30, bucket.tokens + ((now - bucket.ts) / 60_000) * 30);
+    bucket.ts = now;
+    if (bucket.tokens < 1) {
+      this._claimBuckets.set(ip, bucket);
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'rate_limited' }));
+    }
+    bucket.tokens -= 1;
+    this._claimBuckets.set(ip, bucket);
     let body = '';
     for await (const chunk of req) body += chunk;
     let parsed;
@@ -384,11 +563,32 @@ class Gateway {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify({ error: 'missing_field' }));
     }
+    // Server-side bounds — never let arbitrary seat numbers pollute Redis.
+    const seatNum = Number(seat);
+    if (!Number.isInteger(seatNum) || seatNum < 1 || seatNum > 12) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'seat_out_of_range' }));
+    }
+    const safeUserId = String(userId).slice(0, 64);
+    if (!/^[A-Za-z0-9_\-:.]+$/.test(safeUserId)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'userId_invalid' }));
+    }
+    const safeStake = String(stake).slice(0, 16);
+    if (!/^[A-Za-z0-9_\-]+$/.test(safeStake)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'stake_invalid' }));
+    }
+    const safeTableId = String(tableId).slice(0, 64);
+    if (!/^[A-Za-z0-9_\-:]+$/.test(safeTableId)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'tableId_invalid' }));
+    }
     const result = await this.seatClaimer.claim({
-      stake,
-      tableId,
-      seat: Number(seat),
-      userId: String(userId),
+      stake: safeStake,
+      tableId: safeTableId,
+      seat: seatNum,
+      userId: safeUserId,
       reservationToken,
     });
     if (!result.ok) {
@@ -402,6 +602,21 @@ class Gateway {
   // ─── upgrade ─────────────────────────────────────────────────────────
 
   _handleUpgrade(req, socket, head) {
+    // Origin allowlist on the WS upgrade. Browsers always send Origin
+    // for cross-origin WS handshakes; non-browser clients (bots/tests)
+    // typically don't, and we let those through. When ALLOWED_ORIGINS
+    // is unset we fall back to the same dev defaults as CORS so local
+    // dev keeps working out of the box.
+    const reqOrigin = req.headers && req.headers.origin;
+    if (reqOrigin) {
+      const allowed = (process.env.ALLOWED_ORIGINS
+        || 'http://localhost:4001,http://localhost:3000,http://localhost:5173,http://127.0.0.1:4001,http://127.0.0.1:3000'
+      ).split(',').map((s) => s.trim()).filter(Boolean);
+      if (!allowed.includes(reqOrigin)) {
+        this.log('ws_upgrade_origin_denied', { origin: reqOrigin });
+        return rejectHttp(socket, 403, 'forbidden_origin');
+      }
+    }
     const path = (req.url || '').split('?')[0];
 
     // Lobby upgrade — no table binding. Token is optional; if supplied
@@ -536,6 +751,18 @@ class Gateway {
 
   _detach(ws) {
     const tableId = ws._hijack?.tableId;
+    // Snapshot before we tear the bookkeeping down — we need it to call
+    // onLeave for seated players whose socket just dropped.
+    const wasSeated = ws._hijack && ws._hijack.joined && ws._hijack.seat != null && !ws._hijack.spectator;
+    const leaveCtx = wasSeated
+      ? {
+          tableId,
+          seat: ws._hijack.seat,
+          userId: ws._hijack.userId,
+          sessionId: ws._hijack.sessionId,
+        }
+      : null;
+    if (ws._hijack) ws._hijack.joined = false;
     if (tableId) {
       const set = this.byTable.get(tableId);
       if (set) {
@@ -556,6 +783,10 @@ class Gateway {
         try { off(); } catch (_e) {}
       }
       ws._hijack.stakeUnsubs.clear();
+    }
+    if (leaveCtx && this.opts.onLeave) {
+      try { this.opts.onLeave(leaveCtx); }
+      catch (_e) { /* best-effort */ }
     }
   }
 
@@ -679,6 +910,46 @@ class Gateway {
     if (ws._hijack.spectator) {
       return this._send(ws, mkError('spectator', 'socket downgraded after handoff'));
     }
+    // Per-socket token-bucket rate limit. Refills at 8 actions/sec with
+    // a burst of 16 — generous for a real human (timer auto-folds at
+    // ~30s) but cuts off scripts that try to flood a table or mash the
+    // pump loop. Tokens are stored on the ws meta to avoid a Map lookup.
+    const now = Date.now();
+    const meta = ws._hijack;
+    if (meta.actionBucket == null) {
+      meta.actionBucket = 16;
+      meta.actionBucketTs = now;
+    } else {
+      const elapsed = (now - meta.actionBucketTs) / 1000;
+      meta.actionBucket = Math.min(16, meta.actionBucket + elapsed * 8);
+      meta.actionBucketTs = now;
+    }
+    if (meta.actionBucket < 1) {
+      this.log('action_rate_limited', { tableId: meta.tableId, userId: meta.userId });
+      return this._send(ws, mkError('rate_limited', 'too many actions, slow down', msg.tableId));
+    }
+    meta.actionBucket -= 1;
+    // Reject obviously malformed action payloads before they reach the
+    // worker. The engine validates legality, but we want to keep junk
+    // off the worker queue altogether.
+    const validActions = new Set(['fold', 'check', 'call', 'bet', 'raise', 'allin', 'all_in']);
+    if (typeof msg.action !== 'string' || !validActions.has(msg.action)) {
+      return this._send(ws, mkError('bad_action', 'unknown action', msg.tableId));
+    }
+    if (msg.amount != null) {
+      const amt = Number(msg.amount);
+      if (!Number.isFinite(amt) || amt < 0 || amt > 10_000_000) {
+        return this._send(ws, mkError('bad_amount', 'amount out of range', msg.tableId));
+      }
+      msg.amount = amt;
+    }
+    // The seat in the action MUST match the seat the join token bound
+    // this socket to. Otherwise a player could send an action labelled
+    // with someone else's seat and the worker would happily process it.
+    if (msg.seat != null && meta.seat != null && Number(msg.seat) !== Number(meta.seat)) {
+      this.log('action_seat_spoof', { socketSeat: meta.seat, claimedSeat: msg.seat, userId: meta.userId });
+      return this._send(ws, mkError('seat_mismatch', 'cannot act for another seat', msg.tableId));
+    }
     if (!this.opts.onAction) {
       // Phase 2 doesn't define gateway → worker RPC. For now, simply
       // ack — the worker test harness drives ticks directly. The hook
@@ -698,14 +969,19 @@ class Gateway {
   // ─── fan-out & backpressure ─────────────────────────────────────────
 
   _broadcast(tableId, msg) {
-    // Enforce monotonic per-table seq on outbound. The worker's INCR
-    // already guarantees this server-side; we additionally guard against
-    // duplicates from pub/sub redelivery.
-    const lastForTable = this.tableSeq.get(tableId) || 0;
-    if (typeof msg.seq === 'number' && msg.seq <= lastForTable) {
-      return; // dropped duplicate / out-of-order republish
+    // Enforce monotonic per-table seq on outbound — but only for engine
+    // ticks (step >= 0). Synthetic deltas (`hand_completed`, `player_updated`,
+    // …) are tagged with `step === -1` and ride alongside the real seq
+    // stream; if we tracked their seq the next real worker tick would be
+    // dropped as a "duplicate" because they reuse `lastSeq + 1`.
+    const isSynthetic = typeof msg.step === 'number' && msg.step < 0;
+    if (!isSynthetic) {
+      const lastForTable = this.tableSeq.get(tableId) || 0;
+      if (typeof msg.seq === 'number' && msg.seq <= lastForTable) {
+        return; // dropped duplicate / out-of-order republish
+      }
+      if (typeof msg.seq === 'number') this.tableSeq.set(tableId, msg.seq);
     }
-    if (typeof msg.seq === 'number') this.tableSeq.set(tableId, msg.seq);
 
     // Extract worker-side trace context from the published payload so we
     // continue the same trace through the gateway → client fan-out. We
@@ -759,6 +1035,73 @@ class Gateway {
   }
 
   /**
+   * Strip other players' hole cards from a frame before delivering it to
+   * a specific socket. Without this, anyone with the browser network tab
+   * could read every opponent's cards out of the WebSocket payload —
+   * the per-seat `cards` array is broadcast verbatim by the worker.
+   *
+   * Rules:
+   *   - Snapshot/delta with `players[]` → keep cards only for the seat
+   *     this socket owns; everyone else's cards are replaced with a
+   *     length-preserving back-of-card placeholder ('??').
+   *   - At showdown (handStep ∈ FIND_WINNERS / PAY_WINNERS / RECORD_STATS)
+   *     cards become public — we ship them through unchanged.
+   *   - Spectators (no seat) see no hole cards pre-showdown.
+   *   - Folded players' cards remain hidden even at showdown — they
+   *     mucked.
+   */
+  _redactForRecipient(frame, ws) {
+    if (!frame || (frame.t !== 's2c.snapshot' && frame.t !== 's2c.delta')) return frame;
+    let players = null;
+    let step = -1;
+    if (frame.t === 's2c.snapshot' && frame.state) {
+      players = frame.state.players;
+      step = Number(frame.state.game && frame.state.game.handStep);
+    } else if (frame.t === 's2c.delta' && frame.payload) {
+      players = frame.payload.players;
+      step = Number(frame.step);
+    }
+    if (!Array.isArray(players) || players.length === 0) return frame;
+    const recipientSeat = ws && ws._hijack && !ws._hijack.spectator
+      ? ws._hijack.seat
+      : null;
+    // Showdown phase = engine step 13/14/15. Cards are public for any
+    // player still in the hand (status === '1'). Folded seats stay hidden.
+    const isShowdown = Number.isFinite(step) && step >= 13 && step <= 15;
+
+    const cardLen = (c) => {
+      if (Array.isArray(c)) return c.length;
+      if (typeof c === 'string') return c.split(',').filter(Boolean).length;
+      return 0;
+    };
+    const PLACEHOLDER = '??';
+    const hideFor = (p) => {
+      const len = cardLen(p.cards);
+      if (len === 0) return p;
+      // Folded players (status !== '1') always hide. Otherwise hide unless
+      // it's the recipient or we're at showdown.
+      const isFolded = String(p.status) !== '1';
+      const isMine = recipientSeat != null && Number(p.seat) === Number(recipientSeat);
+      if (isMine) return p;
+      if (isShowdown && !isFolded) return p;
+      return { ...p, cards: Array(len).fill(PLACEHOLDER) };
+    };
+
+    const redactedPlayers = players.map(hideFor);
+    // Only allocate a new frame if anything actually changed.
+    let mutated = false;
+    for (let i = 0; i < players.length; i += 1) {
+      if (redactedPlayers[i] !== players[i]) { mutated = true; break; }
+    }
+    if (!mutated) return frame;
+
+    if (frame.t === 's2c.snapshot') {
+      return { ...frame, state: { ...frame.state, players: redactedPlayers } };
+    }
+    return { ...frame, payload: { ...frame.payload, players: redactedPlayers } };
+  }
+
+  /**
    * Send with backpressure handling. If the socket has too many queued
    * messages we drop it and let it resync via reconnect — the durable
    * record is in the event store so this is safe.
@@ -775,8 +1118,9 @@ class Gateway {
       try { ws.close(1013, 'backpressure'); } catch (_e) {}
       return;
     }
+    const safeFrame = this._redactForRecipient(frame, ws);
     meta.pending += 1;
-    ws.send(JSON.stringify(frame), (err) => {
+    ws.send(JSON.stringify(safeFrame), (err) => {
       meta.pending = Math.max(0, meta.pending - 1);
       if (err) {
         try { ws.terminate(); } catch (_e) {}

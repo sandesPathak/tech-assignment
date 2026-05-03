@@ -35,6 +35,10 @@ async function main() {
   });
   matchmaker.start();
   const port = parseInt(process.env.PORT || '3001', 10);
+  // Bind on loopback by default — the worker is not a public service.
+  // Only the gateway needs to talk to it. Operators can opt into a
+  // wider bind by setting WORKER_HOST=0.0.0.0, e.g. for Docker bridges.
+  const host = process.env.WORKER_HOST || '127.0.0.1';
 
   // Shard metrics — every 5s, write `metrics:shard:{id}` so the gateway
   // can decide when to load-shed new joins.
@@ -47,8 +51,8 @@ async function main() {
   });
   reporter.start();
 
-  await new Promise((resolve) => server.listen(port, resolve));
-  log.info({ port, shardId }, 'worker_listening');
+  await new Promise((resolve) => server.listen(port, host, resolve));
+  log.info({ port, host, shardId }, 'worker_listening');
 
   const shutdown = async (signal) => {
     log.info({ signal }, 'worker_shutting_down');

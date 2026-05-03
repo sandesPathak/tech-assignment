@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Box, Typography, Card, CardContent, Stack, CircularProgress, Button, Chip, Dialog, DialogTitle, DialogContent, IconButton, Tooltip } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit'
 import CloseIcon from '@mui/icons-material/Close'
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
+import HowToPlayDialog from '../components/HowToPlayDialog'
 import { useAuth } from '../hooks/useAuth'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -79,6 +81,7 @@ function PokerLobby() {
     return stored ?? '1'
   })
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false)
+  const [howToOpen, setHowToOpen] = useState(false)
   const displayName =
     user?.displayName?.trim() ||
     (user?.email ? user.email.split('@')[0] : '') ||
@@ -120,12 +123,22 @@ function PokerLobby() {
     lastStatsRef.current = stats
   }, [stats])
 
+  // Operator-only token. Read from a Vite env var so it stays out of
+  // the JS bundle on public deploys. When the gateway has ADMIN_TOKEN
+  // set, this header must match.
+  const ADMIN_TOKEN = (import.meta.env.VITE_ADMIN_TOKEN as string) || ''
+  const adminHeaders = (): Record<string, string> => {
+    const h: Record<string, string> = { 'content-type': 'application/json' }
+    if (ADMIN_TOKEN) h['x-admin-token'] = ADMIN_TOKEN
+    return h
+  }
+
   async function spawnSwarm(total: number) {
     setSpawning(true)
     try {
       await fetch(`${GATEWAY_HTTP}/admin/swarm`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: adminHeaders(),
         body: JSON.stringify({ total, ramp: 100 }),
       })
     } finally {
@@ -133,7 +146,10 @@ function PokerLobby() {
     }
   }
   async function stopSwarm() {
-    await fetch(`${GATEWAY_HTTP}/admin/swarm/stop`, { method: 'POST' })
+    await fetch(`${GATEWAY_HTTP}/admin/swarm/stop`, {
+      method: 'POST',
+      headers: adminHeaders(),
+    })
   }
 
   useEffect(() => {
@@ -361,7 +377,24 @@ function PokerLobby() {
             <SideLink icon={<LeaderboardIcon />} label="Leaderboard" onClick={() => navigate('/admin')} />
             <SideLink icon={<AdminPanelSettingsIcon />} label="Admin" onClick={() => navigate('/admin/players')} />
           </Box>
-          <Box sx={{ p: 2, borderTop: `1px solid ${C.border}` }}>
+          <Box sx={{ p: 2, borderTop: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Button
+              fullWidth
+              startIcon={<HelpOutlineIcon />}
+              onClick={() => setHowToOpen(true)}
+              sx={{
+                color: C.textDim,
+                border: `1px solid ${C.border}`,
+                bgcolor: 'rgba(255,255,255,0.02)',
+                textTransform: 'none',
+                fontWeight: 600,
+                py: 0.85,
+                fontSize: 13,
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.06)', color: '#fff', borderColor: C.borderHi },
+              }}
+            >
+              How to play
+            </Button>
             <Button
               fullWidth
               onClick={() => {
@@ -723,6 +756,9 @@ function PokerLobby() {
           </Box>
         </DialogContent>
       </Dialog>
+
+      {/* How to play — Texas Hold'em rules + hand rankings */}
+      <HowToPlayDialog open={howToOpen} onClose={() => setHowToOpen(false)} />
     </Box>
   )
 }

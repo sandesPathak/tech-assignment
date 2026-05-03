@@ -5,6 +5,8 @@ interface ActionButtonsProps {
   game?: GameState;
   players?: Player[];
   onAction?: (seat: number, action: string, amount?: number) => void;
+  /** Local user's real seat number, or null if spectating. */
+  mySeat?: number | null;
 }
 
 const btnSx = {
@@ -17,7 +19,7 @@ const btnSx = {
   py: { xs: 0.75, sm: 1 },
 };
 
-function ActionButtons({ game, players, onAction }: ActionButtonsProps) {
+function ActionButtons({ game, players, onAction, mySeat }: ActionButtonsProps) {
   if (!game || !players || !onAction) {
     return (
       <Box display="flex" gap={1} justifyContent="center" sx={{ opacity: 0.25 }}>
@@ -32,19 +34,27 @@ function ActionButtons({ game, players, onAction }: ActionButtonsProps) {
   const actingSeat = game.move;
   const actingPlayer = players.find((p) => p.seat === actingSeat && p.status === '1');
   const toCall = actingPlayer ? Math.max(0, game.currentBet - actingPlayer.bet) : 0;
-  const canAct = !!actingPlayer;
+  // Only the local user gets to push action buttons — never on behalf of bots.
+  const isMyTurn = !!actingPlayer && mySeat != null && Number(mySeat) === Number(actingPlayer.seat);
+  const canAct = isMyTurn;
   const minRaise = Math.max(game.currentBet * 2, (game.lastRaiseSize || game.bigBlind) + game.currentBet);
 
   const handleAction = (action: string, amount?: number) => {
-    if (!actingPlayer) return;
+    if (!actingPlayer || !isMyTurn) return;
     onAction(actingPlayer.seat, action, amount);
   };
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center" gap={0.5}>
-      {canAct && (
-        <Typography sx={{ fontSize: { xs: 11, sm: 12 }, color: '#90CAF9', fontWeight: 600 }}>
-          {actingPlayer.username}&apos;s turn — {toCall > 0 ? `$${toCall.toFixed(2)} to call` : 'Check or Bet'}
+      {actingPlayer && (
+        <Typography sx={{
+          fontSize: { xs: 11, sm: 12 },
+          color: isMyTurn ? '#FFD700' : '#8B8FA3',
+          fontWeight: isMyTurn ? 700 : 500,
+        }}>
+          {isMyTurn
+            ? `Your turn — ${toCall > 0 ? `$${toCall.toFixed(2)} to call` : 'Check or Bet'}`
+            : `Waiting for ${actingPlayer.username}…`}
         </Typography>
       )}
       <Box display="flex" gap={1} justifyContent="center" flexWrap="wrap">

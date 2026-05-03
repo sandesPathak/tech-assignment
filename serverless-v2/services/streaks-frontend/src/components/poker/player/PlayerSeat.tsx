@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import { Box, Typography, CircularProgress } from '@mui/material';
 import { keyframes } from '@mui/system';
 import CardGroup from '../cards/CardGroup';
@@ -12,6 +13,7 @@ interface PlayerSeatProps {
   timerProgress?: number;
   timeLeft?: number;
   isHero?: boolean;
+  avatarSrc?: string | null;
 }
 
 const AVATAR_COLORS = ['#e53935', '#43A047', '#1E88E5', '#FB8C00', '#8E24AA', '#00ACC1'];
@@ -67,7 +69,7 @@ function getTimerColor(timeLeft: number): string {
   return '#EF5350';
 }
 
-function PlayerSeat({ player, game, timerProgress, timeLeft, isHero }: PlayerSeatProps) {
+function PlayerSeat({ player, game, timerProgress, timeLeft, isHero, avatarSrc }: PlayerSeatProps) {
   const isDealer = game.dealerSeat === player.seat;
   const isSB = game.smallBlindSeat === player.seat;
   const isBB = game.bigBlindSeat === player.seat;
@@ -75,14 +77,36 @@ function PlayerSeat({ player, game, timerProgress, timeLeft, isHero }: PlayerSea
   const isAllIn = player.status === '12';
   const isShowdown = SHOWDOWN_STEPS.includes(game.stepName);
   const hasCards = player.cards && player.cards.length > 0;
-  const showCardsFaceUp = isShowdown && !isFolded && hasCards;
+  // Cards we received look like real ranks ("AH", "KS"). The gateway
+  // replaces other players' cards with the placeholder "??" — that's our
+  // signal that we don't actually hold the data and must always render
+  // face-down regardless of what isShowdown says.
+  const cardsAreRedacted = Array.isArray(player.cards)
+    && player.cards.some((c) => typeof c === 'string' && c.startsWith('?'));
+  const showCardsFaceUp = isShowdown && !isFolded && hasCards && !cardsAreRedacted;
   const isWinner = player.winnings > 0;
   const isActing = game.move === player.seat && player.status === '1' && game.stepName.includes('BETTING');
   const avatarColor = isHero ? '#FF6B35' : AVATAR_COLORS[(player.seat - 1) % AVATAR_COLORS.length];
   const cardsDealt = game.handStep >= 4;
 
-  // Hero avatar is bigger
-  const baseSize = isHero ? 74 : 50;
+  // Hero click-to-peek state. Cards stay face-down by default — the user
+  // taps them (or any cardholder hot zone) to flip-reveal. Auto-resets
+  // each new hand so the previous hand's reveal doesn't leak into the
+  // new hole cards. Showdown forces face-up regardless of this flag.
+  const [revealed, setRevealed] = useState(false);
+  const lastGameNoRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!isHero) return;
+    if (lastGameNoRef.current !== game.gameNo) {
+      lastGameNoRef.current = game.gameNo;
+      setRevealed(false);
+    }
+  }, [game.gameNo, isHero]);
+  const heroFaceUp = isHero && !cardsAreRedacted && (revealed || showCardsFaceUp);
+
+  // Hero avatar is meaningfully larger so the user can spot themselves
+  // at a glance without leaning on color alone.
+  const baseSize = isHero ? 96 : 50;
   const avatarSize = isActing ? baseSize + 8 : baseSize;
   const timerColor = timeLeft !== undefined ? getTimerColor(timeLeft) : '#FFD700';
 
@@ -90,6 +114,7 @@ function PlayerSeat({ player, game, timerProgress, timeLeft, isHero }: PlayerSea
     <Box
       data-testid={`player-seat-${player.seat}`}
       sx={{
+        position: 'relative',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -98,7 +123,7 @@ function PlayerSeat({ player, game, timerProgress, timeLeft, isHero }: PlayerSea
         transition: 'opacity 0.3s ease, transform 0.3s ease',
         transform: isActing ? 'scale(1.1)' : 'scale(1)',
         minWidth: 90,
-        zIndex: isHero ? 15 : isActing ? 10 : 1,
+        zIndex: isHero ? 15 : isActing ? 10 : isWinner ? 12 : 1,
       }}
     >
       {/* Name + badges */}
@@ -169,14 +194,30 @@ function PlayerSeat({ player, game, timerProgress, timeLeft, isHero }: PlayerSea
             transition: 'all 0.3s ease',
           }}
         >
-          <Typography sx={{
-            fontSize: isHero ? (isActing ? 30 : 26) : (isActing ? 22 : 18),
-            fontWeight: 800,
-            color: isWinner ? '#4ADE80' : isActing ? '#FFD700' : avatarColor,
-            transition: 'all 0.3s ease',
-          }}>
-            {player.username.charAt(0).toUpperCase()}
-          </Typography>
+          {avatarSrc ? (
+            <Box
+              component="img"
+              src={avatarSrc}
+              alt=""
+              sx={{
+                width: '88%',
+                height: '88%',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                pointerEvents: 'none',
+                userSelect: 'none',
+              }}
+            />
+          ) : (
+            <Typography sx={{
+              fontSize: isHero ? (isActing ? 38 : 34) : (isActing ? 22 : 18),
+              fontWeight: 800,
+              color: isWinner ? '#4ADE80' : isActing ? '#FFD700' : avatarColor,
+              transition: 'all 0.3s ease',
+            }}>
+              {player.username.charAt(0).toUpperCase()}
+            </Typography>
+          )}
         </Box>
 
         {/* Timer seconds (bottom-right badge) */}
@@ -220,14 +261,84 @@ function PlayerSeat({ player, game, timerProgress, timeLeft, isHero }: PlayerSea
         )}
       </Box>
 
-      {/* Hole cards */}
+      {/* Hole cards. For the hero we render a 3D flip wrapper so a tap
+          flips between back-of-card (default) and the real two cards.
+          The cards still render face-up at showdown automatically. */}
       {cardsDealt && hasCards && !isFolded && (
         <Box sx={{ animation: `${popIn} 0.4s ease-out` }}>
-          <CardGroup
-            cards={showCardsFaceUp ? player.cards : player.cards}
-            faceDown={!showCardsFaceUp}
-            size="small"
-          />
+          {isHero ? (
+            <Box
+              onClick={() => setRevealed((v) => !v)}
+              role="button"
+              aria-label={heroFaceUp ? 'Hide your cards' : 'Tap to peek at your cards'}
+              title={heroFaceUp ? 'Click to hide' : 'Click to reveal'}
+              sx={{
+                position: 'relative',
+                display: 'inline-block',
+                cursor: 'pointer',
+                perspective: '600px',
+                transition: 'transform 0.2s ease',
+                '&:hover': { transform: 'translateY(-2px)' },
+              }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'inline-block',
+                  transformStyle: 'preserve-3d',
+                  transition: 'transform 0.55s cubic-bezier(0.4, 0.1, 0.2, 1)',
+                  transform: heroFaceUp ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                }}
+              >
+                {/* Back face (default) */}
+                <Box
+                  sx={{
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                  }}
+                >
+                  <CardGroup cards={player.cards} faceDown size="small" />
+                </Box>
+                {/* Front face (flipped to face the user once revealed) */}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    inset: 0,
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                    transform: 'rotateY(180deg)',
+                  }}
+                >
+                  <CardGroup cards={player.cards} faceDown={false} size="small" />
+                </Box>
+              </Box>
+              {!heroFaceUp && (
+                <Typography
+                  sx={{
+                    position: 'absolute',
+                    bottom: -14,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: 1,
+                    color: '#FFD700',
+                    whiteSpace: 'nowrap',
+                    pointerEvents: 'none',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.6)',
+                  }}
+                >
+                  TAP TO PEEK
+                </Typography>
+              )}
+            </Box>
+          ) : (
+            <CardGroup
+              cards={player.cards}
+              faceDown={!showCardsFaceUp}
+              size="small"
+            />
+          )}
         </Box>
       )}
 
@@ -262,27 +373,67 @@ function PlayerSeat({ player, game, timerProgress, timeLeft, isHero }: PlayerSea
         </Box>
       )}
 
-      {/* Hand rank at showdown */}
-      {isShowdown && player.handRank && !isFolded && (
-        <Box sx={{ bgcolor: 'rgba(0,0,0,0.7)', borderRadius: 1, px: 1, py: 0.25, animation: `${popIn} 0.5s ease-out` }}>
-          <Typography sx={{ fontSize: 10, color: '#FBBF24', fontWeight: 600, textAlign: 'center', whiteSpace: 'nowrap' }}>
-            {player.handRank}
-          </Typography>
-        </Box>
-      )}
-
-      {/* Winnings — animated float up */}
-      {isWinner && (
-        <Box sx={{ animation: `${winningsFloat} 0.6s ease-out forwards`, position: 'relative' }}>
-          <Typography sx={{
-            fontSize: 16,
-            fontWeight: 900,
-            color: '#4ADE80',
-            textShadow: '0 0 12px rgba(74,222,128,0.7), 0 0 24px rgba(74,222,128,0.3)',
-            letterSpacing: 0.5,
-          }}>
-            +${player.winnings.toFixed(2)}
-          </Typography>
+      {/* Showdown overlay — winnings + hand rank stacked as an absolute
+          ribbon over the avatar/cards so they never push siblings down
+          into the next seat's anchor. */}
+      {(isWinner || (isShowdown && player.handRank && !isFolded)) && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 0.25,
+            pointerEvents: 'none',
+            zIndex: 25,
+            animation: `${popIn} 0.5s ease-out`,
+          }}
+        >
+          {isWinner && (
+            <Box
+              sx={{
+                bgcolor: 'rgba(0,0,0,0.85)',
+                border: '1.5px solid #4ADE80',
+                borderRadius: 1.5,
+                px: 1,
+                py: 0.25,
+                animation: `${winningsFloat} 0.6s ease-out forwards`,
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  fontWeight: 900,
+                  color: '#4ADE80',
+                  textShadow: '0 0 8px rgba(74,222,128,0.7)',
+                  letterSpacing: 0.3,
+                  whiteSpace: 'nowrap',
+                  lineHeight: 1.1,
+                }}
+              >
+                +${player.winnings.toFixed(2)}
+              </Typography>
+            </Box>
+          )}
+          {isShowdown && player.handRank && !isFolded && (
+            <Box sx={{ bgcolor: 'rgba(0,0,0,0.85)', borderRadius: 1, px: 0.75, py: 0.1 }}>
+              <Typography
+                sx={{
+                  fontSize: 9,
+                  color: '#FBBF24',
+                  fontWeight: 700,
+                  textAlign: 'center',
+                  whiteSpace: 'nowrap',
+                  lineHeight: 1.1,
+                }}
+              >
+                {player.handRank}
+              </Typography>
+            </Box>
+          )}
         </Box>
       )}
     </Box>

@@ -53,7 +53,14 @@ async function pickOpenSeat() {
 }
 
 async function spawnOne(idx) {
-  const target = await pickOpenSeat();
+  // Retry a few times with backoff — the matchmaker may not have
+  // spawned enough tables yet when the swarm starts ramping.
+  let target = null;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    target = await pickOpenSeat();
+    if (target) break;
+    await new Promise((r) => setTimeout(r, 200 * (attempt + 1)));
+  }
   if (!target) return false;
   const userId = `${ID_PREFIX}-${String(idx).padStart(5, '0')}`;
   let claim = null;
@@ -76,16 +83,34 @@ async function spawnOne(idx) {
   );
   let game = null;
   let players = [];
+  let lastActedKey = '';
+  function isBettingStep() {
+    if (!game) return false;
+    const step = Number(game.handStep);
+    if (BETTING_STEPS.has(step)) return true;
+    const name = String(game.stepName || '');
+    return name.includes('BETTING');
+  }
   function maybeAct() {
     if (!game) return;
-    const step = Number(game.handStep);
-    if (!BETTING_STEPS.has(step)) return;
+    if (!isBettingStep()) return;
     if (Number(game.move) !== Number(mySeat)) return;
     const me = (players || []).find((p) => Number(p.seat) === Number(mySeat));
     if (!me || String(me.status) !== '1') return;
+    // De-dupe: don't fire twice for the same (gameNo, step, currentBet) tuple.
+    const key = `${game.gameNo}:${game.handStep}:${game.currentBet}`;
+    if (key === lastActedKey) return;
+    if (ws.readyState !== ws.OPEN) return; // wait for OPEN; safety-net interval will retry
     const toCall = Number(game.currentBet || 0) - Number(me.bet || 0);
     const action = toCall > 0 ? 'call' : 'check';
-    try { ws.send(JSON.stringify({ t: C2S.ACTION, tableId: target.tableId, seat: mySeat, action })); } catch (_e) {}
+    let sent = false;
+    try {
+      ws.send(JSON.stringify({ t: C2S.ACTION, tableId: target.tableId, seat: mySeat, action }));
+      sent = true;
+    } catch (_e) { /* will retry on next tick */ }
+    // Only set the dedupe key AFTER a successful send — otherwise a transient
+    // send failure permanently strands the bot on this state.
+    if (sent) lastActedKey = key;
   }
   ws.on('open', () => {
     ws.send(JSON.stringify({ t: C2S.JOIN, tableId: target.tableId, seat: mySeat, lastSeq: 0, joinToken: claim.joinToken }));
@@ -100,16 +125,22 @@ async function spawnOne(idx) {
       if (p.game) game = p.game;
       else if (game) {
         if (p.to != null) game.handStep = p.to;
+        if (p.stepName != null) game.stepName = p.stepName;
         if (p.move != null) game.move = p.move;
         if (p.currentBet != null) game.currentBet = p.currentBet;
         if (p.pot != null) game.pot = p.pot;
         if (p.community != null) game.communityCards = p.community;
+        if (p.gameNo != null) game.gameNo = p.gameNo;
       }
       if (p.players) players = p.players;
       maybeAct();
     }
   });
-  ws.on('close', () => { connected -= 1; });
+  // Safety net: even if a delta arrives without a recognised payload shape,
+  // re-check every second whether it's our turn. The de-dupe above keeps
+  // this idempotent.
+  const tick = setInterval(maybeAct, 1000);
+  ws.on('close', () => { clearInterval(tick); connected -= 1; });
   ws.on('error', () => { /* swallow */ });
   conns.push(ws);
   return true;

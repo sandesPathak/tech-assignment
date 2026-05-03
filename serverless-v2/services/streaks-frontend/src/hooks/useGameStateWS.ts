@@ -121,6 +121,13 @@ export function useGameStateWS({ stake = '1-2', playerId, username, tableId: for
     connectingRef.current = true
     setLoading(true)
     setError(null)
+    // Reset table-specific state so the previous session's snapshot
+    // (e.g. me-as-hero from the play view) doesn't bleed through into
+    // the new connection — particularly when toggling play ↔ spectate
+    // or hopping to another table.
+    setTableState(null)
+    setTableId(null)
+    setMySeat(null)
     try {
       // 1. resolve target table — explicit > first-open at stake
       let targetTable = forceTableId
@@ -191,68 +198,92 @@ export function useGameStateWS({ stake = '1-2', playerId, username, tableId: for
         return
       }
 
-      // 2b. PLAY PATH — claim a seat.
-      let seatToTake = 1
-      for (let s = 1; s <= maxSeats; s += 1) {
-        seatToTake = s
-        try {
-          const claimRes = await fetch(`${GATEWAY_HTTP}/seat-claim`, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({
-              stake,
-              tableId: targetTable,
-              seat: s,
-              userId: playerId,
-            }),
-          })
-          if (claimRes.ok) {
-            const claim = await claimRes.json()
-            // 3. open WS with joinToken
-            const url = `${GATEWAY_WS}/table/${encodeURIComponent(targetTable)}?token=${encodeURIComponent(claim.joinToken)}`
-            const ws = new WebSocket(url)
-            wsRef.current = ws
-            setTableId(targetTable)
-            setMySeat(s)
-            ws.onopen = () => {
-              ws.send(JSON.stringify({
-                t: 'c2s.join',
-                tableId: targetTable,
+      // 2b. PLAY PATH — claim a seat. If the requested table is fully
+      // taken by the time we ask, fall back to any open table at the same
+      // stake (Quick Join semantics: get me into A game, not THE table).
+      const tried: string[] = []
+      let attemptTable = targetTable
+      let attemptMaxSeats = maxSeats
+      const maxFallbacks = 4
+      for (let attempt = 0; attempt <= maxFallbacks; attempt += 1) {
+        if (!attemptTable) break
+        let claimed: { joinToken: string; seat: number } | null = null
+        for (let s = 1; s <= attemptMaxSeats; s += 1) {
+          try {
+            const claimRes = await fetch(`${GATEWAY_HTTP}/seat-claim`, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({
+                stake,
+                tableId: attemptTable,
                 seat: s,
-                lastSeq: 0,
-                joinToken: claim.joinToken,
-                username,
-              }))
+                userId: playerId,
+              }),
+            })
+            if (claimRes.ok) {
+              const claim = await claimRes.json()
+              claimed = { joinToken: claim.joinToken, seat: s }
+              break
             }
-            ws.onmessage = (ev) => {
-              let msg: any
-              try { msg = JSON.parse(ev.data) } catch { return }
-              if (msg.t === 's2c.snapshot') {
-                const game = normalizeGame(msg.state?.game)
-                const players = normalizePlayers(msg.state?.players)
-                setTableState({ game, players })
-                setLoading(false)
-              } else if (msg.t === 's2c.delta') {
-                setTableState((prev) => {
-                  const baseGame = prev?.game
-                  const basePlayers = prev?.players || []
-                  const game = msg.payload?.game ? normalizeGame(msg.payload.game) : baseGame
-                  const players = msg.payload?.players ? normalizePlayers(msg.payload.players) : basePlayers
-                  if (!game) return prev
-                  return { game, players }
-                })
-              } else if (msg.t === 's2c.error') {
-                setError(msg.message || msg.code || 'gateway_error')
-              }
-            }
-            ws.onclose = () => { wsRef.current = null }
-            ws.onerror = () => setError('ws_error')
-            return
+          } catch (_e) { /* try next seat */ }
+        }
+        if (claimed) {
+          const url = `${GATEWAY_WS}/table/${encodeURIComponent(attemptTable)}?token=${encodeURIComponent(claimed.joinToken)}`
+          const ws = new WebSocket(url)
+          wsRef.current = ws
+          setTableId(attemptTable)
+          setMySeat(claimed.seat)
+          ws.onopen = () => {
+            ws.send(JSON.stringify({
+              t: 'c2s.join',
+              tableId: attemptTable,
+              seat: claimed!.seat,
+              lastSeq: 0,
+              joinToken: claimed!.joinToken,
+              username,
+            }))
           }
-          // seat taken — try the next one
-        } catch (_e) { /* try next */ }
+          ws.onmessage = (ev) => {
+            let msg: any
+            try { msg = JSON.parse(ev.data) } catch { return }
+            if (msg.t === 's2c.snapshot') {
+              const game = normalizeGame(msg.state?.game)
+              const players = normalizePlayers(msg.state?.players)
+              setTableState({ game, players })
+              setLoading(false)
+            } else if (msg.t === 's2c.delta') {
+              setTableState((prev) => {
+                const baseGame = prev?.game
+                const basePlayers = prev?.players || []
+                const game = msg.payload?.game ? normalizeGame(msg.payload.game) : baseGame
+                const players = msg.payload?.players ? normalizePlayers(msg.payload.players) : basePlayers
+                if (!game) return prev
+                return { game, players }
+              })
+            } else if (msg.t === 's2c.error') {
+              setError(msg.message || msg.code || 'gateway_error')
+            }
+          }
+          ws.onclose = () => { wsRef.current = null }
+          ws.onerror = () => setError('ws_error')
+          return
+        }
+        // table is full — pick the next one with open seats
+        tried.push(attemptTable)
+        try {
+          const lobbyRes = await fetch(`${GATEWAY_HTTP}/lobby/${encodeURIComponent(stake)}`)
+          if (!lobbyRes.ok) break
+          const lobby = await lobbyRes.json()
+          const next = (lobby.tables || []).find(
+            (t: { tableId: string; openSeats: number }) =>
+              t.openSeats > 0 && !tried.includes(t.tableId),
+          )
+          if (!next) break
+          attemptTable = next.tableId as string
+          attemptMaxSeats = Number(next.maxSeats) || 6
+        } catch { break }
       }
-      throw new Error(`could not claim a seat (tried 1..${maxSeats})`)
+      throw new Error(`could not claim a seat (tried ${tried.length} tables)`)
     } catch (err) {
       setError((err as Error).message)
       setLoading(false)

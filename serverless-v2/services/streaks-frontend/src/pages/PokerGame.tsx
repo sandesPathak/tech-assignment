@@ -43,6 +43,13 @@ function PokerGame() {
   const [selfExcludedUntil, setSelfExcludedUntil] = useState<string | null>(null)
   const [exclusionChecked, setExclusionChecked] = useState(false)
 
+  const ADMIN_TOKEN = (import.meta.env.VITE_ADMIN_TOKEN as string) || ''
+  const adminHeaders = useCallback((): Record<string, string> => {
+    const h: Record<string, string> = { 'content-type': 'application/json' }
+    if (ADMIN_TOKEN) h['x-admin-token'] = ADMIN_TOKEN
+    return h
+  }, [ADMIN_TOKEN])
+
   // Auto-fill empty seats with bots if the human is seated alone.
   // Fires once per (tableId, stake) per page-mount, ~2.5s after first snapshot
   // so a real human/bot already mid-join has time to land first.
@@ -61,12 +68,31 @@ function PokerGame() {
       const want = Math.min(8, Math.max(2, maxSeats - 1))
       fetch(`${GATEWAY_HTTP}/admin/fill-table`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: adminHeaders(),
         body: JSON.stringify({ tableId, stake, count: want }),
       }).catch(() => { /* non-critical */ })
     }, 2500)
     return () => clearTimeout(t)
-  }, [tableState, requestedTableId, stake, spectate])
+  }, [tableState, requestedTableId, stake, spectate, adminHeaders])
+
+  // Manual "Spawn Bots" button. Endpoint dedupes per-table within 30s,
+  // so we mirror that lock client-side to keep the button visibly busy.
+  const [spawning, setSpawning] = useState(false)
+  const handleSpawnBots = useCallback(async () => {
+    if (!requestedTableId || spawning) return
+    setSpawning(true)
+    try {
+      const seated = tableState?.players.filter((p) => p.seat != null).length ?? 0
+      const maxSeats = tableState?.game.maxSeats || 6
+      const want = Math.min(8, Math.max(1, maxSeats - seated))
+      await fetch(`${GATEWAY_HTTP}/admin/fill-table`, {
+        method: 'POST',
+        headers: adminHeaders(),
+        body: JSON.stringify({ tableId: requestedTableId, stake, count: want }),
+      })
+    } catch { /* non-critical */ }
+    setTimeout(() => setSpawning(false), 28_000)
+  }, [requestedTableId, stake, tableState, spawning, adminHeaders])
 
   useEffect(() => {
     getResponsibleGaming()
@@ -210,6 +236,24 @@ function PokerGame() {
           ) : mySeat != null ? (
             <Typography color="#8B8FA3" fontSize={12}>Your seat: {mySeat}</Typography>
           ) : null}
+          {!spectate && (
+            <Button
+              size="small"
+              onClick={handleSpawnBots}
+              disabled={spawning || !requestedTableId}
+              sx={{
+                color: '#FFB300',
+                textTransform: 'none',
+                ml: 1,
+                border: '1px solid rgba(255,179,0,0.4)',
+                bgcolor: 'rgba(255,179,0,0.08)',
+                '&:hover': { bgcolor: 'rgba(255,179,0,0.18)' },
+                '&.Mui-disabled': { color: 'rgba(255,179,0,0.35)' },
+              }}
+            >
+              {spawning ? 'Bots inbound…' : 'Spawn bots'}
+            </Button>
+          )}
           <Button size="small" onClick={() => navigate('/lobby')} sx={{ color: '#90CAF9', textTransform: 'none', ml: 1 }}>
             Lobby
           </Button>
@@ -223,9 +267,11 @@ function PokerGame() {
             heroPlayerId={playerId}
             heroDisplayName={displayName}
             heroSeat={
-              mySeat
-              ?? tableState.players.find((p) => String(p.playerId) === String(playerId))?.seat
-              ?? null
+              spectate
+                ? null
+                : mySeat
+                  ?? tableState.players.find((p) => String(p.playerId) === String(playerId))?.seat
+                  ?? null
             }
             tableId={requestedTableId}
           />
@@ -236,6 +282,7 @@ function PokerGame() {
             game={isBettingStep ? tableState.game : undefined}
             players={isBettingStep ? tableState.players : undefined}
             onAction={isBettingStep ? handleAction : undefined}
+            mySeat={mySeat}
           />
           <GameControls
             onNextStep={() => { /* server auto-advances */ }}

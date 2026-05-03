@@ -123,6 +123,12 @@ function PokerTable({ tableState, timerProgress, timeLeft, heroPlayerId, heroDis
   const { game, players } = tableState;
   const hasCards = game.communityCards && game.communityCards.length > 0;
   const theme = pickTheme(tableId ?? (game as { tableId?: string }).tableId ?? null);
+  // Hero's chosen avatar (saved by PokerLobby's avatar picker).
+  const heroAvatarId = typeof window !== 'undefined'
+    ? (localStorage.getItem('hijack:avatarId') || '1')
+    : '1';
+  const avatarFor = (seat: number, isHero: boolean): string =>
+    isHero ? `/avatars/${heroAvatarId}.svg` : `/avatars/${((seat - 1) % 24) + 1}.svg`;
 
   // Track per-seat bet deltas so we can fly chips from seat → pot on raises.
   const lastBetsRef = useRef<Record<number, number>>({});
@@ -331,6 +337,7 @@ function PokerTable({ tableState, timerProgress, timeLeft, heroPlayerId, heroDis
                 timerProgress={isActing ? timerProgress : undefined}
                 timeLeft={isActing ? timeLeft : undefined}
                 isHero={isHero}
+                avatarSrc={avatarFor(player.seat, isHero)}
               />
             </Box>
           );

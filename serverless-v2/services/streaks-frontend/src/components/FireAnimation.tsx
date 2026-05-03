@@ -19,8 +19,6 @@ function FireAnimation({ size = 30, containerWidth = 56 }: FireAnimationProps) {
     []
   )
 
-  const ringSize = Math.round(size * 0.95)
-
   return (
     <Box
       sx={{
@@ -58,45 +56,12 @@ function FireAnimation({ size = 30, containerWidth = 56 }: FireAnimationProps) {
           '20%': { opacity: 1 },
           '100%': { transform: 'translateY(-28px) scale(0.2)', opacity: 0 },
         },
-        '@keyframes ringPulse': {
-          '0%': { transform: 'translate(-50%,-50%) scale(0.4)', opacity: 0.55 },
-          '100%': { transform: 'translate(-50%,-50%) scale(1.6)', opacity: 0 },
-        },
         '@keyframes hueShift': {
           '0%, 100%': { color: '#ff7a18' },
           '50%': { color: '#ffb347' },
         },
       }}
     >
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          width: ringSize,
-          height: ringSize,
-          borderRadius: '50%',
-          border: '1.5px solid rgba(249,115,22,0.6)',
-          opacity: 0,
-          transform: 'translate(-50%,-50%) scale(0.4)',
-          animation: 'ringPulse 2.2s ease-out infinite both',
-        }}
-      />
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          width: ringSize,
-          height: ringSize,
-          borderRadius: '50%',
-          border: '1.5px solid rgba(255,165,0,0.5)',
-          opacity: 0,
-          transform: 'translate(-50%,-50%) scale(0.4)',
-          animation: 'ringPulse 2.2s ease-out 1.1s infinite both',
-        }}
-      />
-
       {sparks.map((s, i) => (
         <Box
           key={i}

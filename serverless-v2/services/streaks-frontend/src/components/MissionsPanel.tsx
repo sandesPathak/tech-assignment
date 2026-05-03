@@ -4,11 +4,13 @@ import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import StarIcon from '@mui/icons-material/Star';
 import { useMissions } from '../hooks/useMissions';
+import Celebration from './Celebration';
 import gsap from 'gsap';
 
 function MissionsPanel() {
   const { missions, pointsEarnedToday, loading, claimMission } = useMissions();
   const [claiming, setClaiming] = useState<string | null>(null);
+  const [celebrating, setCelebrating] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const barsAnimated = useRef(false);
 
@@ -16,6 +18,7 @@ function MissionsPanel() {
     setClaiming(missionId);
     try {
       await claimMission(missionId);
+      setCelebrating(true);
     } catch (err) {
       console.error('Failed to claim mission:', err);
     } finally {
@@ -58,6 +61,8 @@ function MissionsPanel() {
   }
 
   return (
+    <>
+    <Celebration active={celebrating} label="CLAIMED!" onComplete={() => setCelebrating(false)} />
     <Card
       sx={{
         bgcolor: 'rgba(26,29,39,0.85)',
@@ -205,6 +210,7 @@ function MissionsPanel() {
         </Box>
       </CardContent>
     </Card>
+    </>
   );
 }
 

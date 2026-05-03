@@ -10,6 +10,7 @@ import PhaseIndicator from '../components/poker/info/PhaseIndicator'
 import HandHistoryLog from '../components/poker/info/HandHistoryLog'
 import Celebration from '../components/Celebration'
 import WinCelebration from '../components/poker/WinCelebration'
+import FireAnimation from '../components/FireAnimation'
 import { useGameStateWS } from '../hooks/useGameStateWS'
 import { useHandHistory } from '../hooks/useHandHistory'
 import { useTurnTimer } from '../hooks/useTurnTimer'
@@ -231,6 +232,9 @@ function PokerGame() {
           <IconButton onClick={() => navigate('/lobby')} sx={{ color: '#90CAF9', mr: 1 }} size="small">
             <ArrowBackIcon fontSize="small" />
           </IconButton>
+          <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+            <FireAnimation size={24} containerWidth={36} />
+          </Box>
           <Box flex={1} display="flex" justifyContent="center">
             <PhaseIndicator
               handStep={tableState.game.handStep}

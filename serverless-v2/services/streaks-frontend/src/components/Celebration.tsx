@@ -8,9 +8,10 @@ const CONFETTI_COLORS = ['#FF6B35', '#FFD700', '#4ADE80', '#60A5FA', '#E040FB', 
 interface CelebrationProps {
   active: boolean;
   onComplete?: () => void;
+  label?: string;
 }
 
-function Celebration({ active, onComplete }: CelebrationProps) {
+function Celebration({ active, onComplete, label = 'STREAK!' }: CelebrationProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
 
@@ -49,7 +50,7 @@ function Celebration({ active, onComplete }: CelebrationProps) {
 
     // Create center burst text
     const burstText = document.createElement('div');
-    burstText.textContent = 'STREAK!';
+    burstText.textContent = label;
     burstText.style.cssText = `
       position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%) scale(0);
       font-size: 48px; font-weight: 900; color: #FFD700;
@@ -130,7 +131,7 @@ function Celebration({ active, onComplete }: CelebrationProps) {
       tl.kill();
       container.innerHTML = '';
     };
-  }, [active, stableOnComplete]);
+  }, [active, stableOnComplete, label]);
 
   return (
     <Box

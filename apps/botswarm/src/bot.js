@@ -255,6 +255,13 @@ class Bot {
         this.view.isMyTurn = Number(g.move) === Number(this.view.mySeat);
       }
     }
+    // Worker deltas can also flatten fields at payload root (no `game`).
+    if (payload.currentBet != null) this.view.currentBet = num(payload.currentBet);
+    if (payload.bigBlind != null) this.view.bigBlind = num(payload.bigBlind, 2);
+    if (payload.handStep != null) this.view.handStep = String(payload.handStep);
+    if (payload.move != null && this.view.mySeat != null) {
+      this.view.isMyTurn = Number(payload.move) === Number(this.view.mySeat);
+    }
     if (Array.isArray(payload.players)) {
       const me = pickMe(payload.players, this.botId, this.view.mySeat);
       if (me) {

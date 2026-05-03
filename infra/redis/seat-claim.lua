@@ -64,11 +64,15 @@ else
     local exUser  = string.sub(existing, 1, p1 - 1)
     local exToken = string.sub(existing, p1 + 1, p2 - 1)
     local exExp   = tonumber(string.sub(existing, p2 + 1)) or 0
-    if exUser == userId and exToken == token then
-      -- Idempotent: same user+token -> refresh TTL, treat as success.
+    if exUser == userId then
+      -- Same user re-claiming this seat — page refresh, reconnect, or
+      -- handoff. Always succeed (refresh TTL, mint new token). Without
+      -- this, a user who reloads gets locked out of their own seat for
+      -- the remaining TTL while the engine still has them as a player,
+      -- so the UI ends up showing them seated with no action bar.
       claimed = true
     elseif exExp <= nowMs then
-      -- Reservation lapsed; reclaim.
+      -- Reservation lapsed; another user can reclaim.
       claimed = true
     else
       return {0, 'taken'}

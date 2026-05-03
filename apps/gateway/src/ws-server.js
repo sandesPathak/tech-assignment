@@ -215,7 +215,8 @@ class Gateway {
       }
       const lobbyMatch = urlPath.match(/^\/lobby\/([^/]+)$/);
       if (req.method === 'GET' && lobbyMatch) {
-        return this.lobby.handleRestList(lobbyMatch[1], res);
+        const playerId = req.headers['x-player-id'];
+        return this.lobby.handleRestList(lobbyMatch[1], res, { playerId });
       }
       if (req.method === 'POST' && urlPath === '/seat-claim') {
         return this._handleSeatClaim(req, res);
@@ -880,6 +881,36 @@ class Gateway {
         ws._hijack.seat = claims.seat;
         ws._hijack.boundUserId = String(claims.sub);
         ws._hijack.bound = true;
+        // Evict any prior socket already bound to (tableId, seat). The
+        // seat-claim Lua hands the seat to the new caller once the old
+        // reservation lapses, but the previous occupant's WS keeps its
+        // `meta.seat` binding and the seat-spoof guard in `_onAction`
+        // still matches — so the old occupant (typically a bot from the
+        // swarm) keeps firing `c2s.action` for what is now THIS user's
+        // seat. Closing the stale socket is the only way to stop it.
+        const existingSet = this.byTable.get(tableId);
+        if (existingSet) {
+          for (const other of existingSet) {
+            if (other === ws) continue;
+            const om = other._hijack;
+            if (!om || om.spectator) continue;
+            if (om.seat == null || Number(om.seat) !== Number(claims.seat)) continue;
+            if (om.boundUserId === String(claims.sub)) continue; // same user reconnect
+            this.log('seat_takeover_evict', {
+              tableId,
+              seat: claims.seat,
+              evictedUser: om.boundUserId,
+              newUser: String(claims.sub),
+            });
+            try { this._send(other, mkKicked('seat_takeover')); } catch (_e) {}
+            try { other.close(1000, 'seat_takeover'); } catch (_e) {}
+            // Mark the evicted socket so any in-flight `c2s.action`
+            // racing with the close gets rejected before it reaches the
+            // worker.
+            om.bound = false;
+            om.seat = null;
+          }
+        }
         // Pin the seat reservation while this WS is alive. The seat-claim
         // Lua writes a 30s TTL — long enough for the WS handshake but
         // short enough that the matchmaker reaps it once we're seated,
@@ -935,6 +966,13 @@ class Gateway {
     }
     if (ws._hijack.spectator) {
       return this._send(ws, mkError('spectator', 'socket downgraded after handoff'));
+    }
+    // If this socket was evicted by a seat-takeover but hasn't fully
+    // closed yet, drop any in-flight actions before they reach the
+    // worker. Without this an evicted bot can land one last fold/call
+    // for the seat its successor just claimed.
+    if (ws._hijack.bound === false) {
+      return this._send(ws, mkError('seat_taken_over', 'seat reassigned to another user'));
     }
     // Per-socket token-bucket rate limit. Refills at 8 actions/sec with
     // a burst of 16 — generous for a real human (timer auto-folds at
@@ -1021,6 +1059,19 @@ class Gateway {
 
     const set = this.byTable.get(tableId);
     if (!set) return;
+    // Stringify-once fast path. Most deltas don't carry a `players[]`
+    // array, so per-recipient redaction is a no-op and we'd be paying
+    // 10k× the JSON.stringify cost of a single frame for nothing. Only
+    // frames that actually carry hole-card-bearing `players` need the
+    // per-recipient redact + restringify.
+    const carriesPlayers = (
+      (msg.t === 's2c.snapshot' && msg.state && Array.isArray(msg.state.players)) ||
+      (msg.t === 's2c.delta' && msg.payload && Array.isArray(msg.payload.players))
+    );
+    let encoded = null;
+    if (!carriesPlayers) {
+      try { encoded = JSON.stringify(msg); } catch (_e) { /* fall back to per-recipient */ }
+    }
     for (const ws of set) {
       // Spectator-mode sockets (post-handoff) get a filtered stream.
       // shouldDeliverToSpectator returns true for public events; we drop
@@ -1029,7 +1080,8 @@ class Gateway {
       if (ws._hijack && ws._hijack.spectator) {
         if (!shouldDeliverToSpectator(msg, { seat: ws._hijack.seat })) continue;
       }
-      this._send(ws, msg);
+      if (encoded != null) this._sendEncoded(ws, encoded);
+      else this._send(ws, msg);
     }
   }
 
@@ -1154,11 +1206,42 @@ class Gateway {
     });
   }
 
+  /**
+   * Send a pre-encoded JSON string. Used by `_broadcast` when the frame
+   * has no per-recipient redaction work — saves a `JSON.stringify` per
+   * recipient at swarm scale. Skips redaction by construction: the
+   * caller has guaranteed the frame is safe for everyone.
+   */
+  _sendEncoded(ws, encoded) {
+    if (ws.readyState !== ws.OPEN) return;
+    const meta = ws._hijack;
+    if (!meta) return;
+    if (meta.pending >= this.backpressureLimit) {
+      this.log('backpressure_drop', { tableId: meta.tableId, pending: meta.pending });
+      try { ws.send(JSON.stringify(mkKicked('backpressure_resync'))); } catch (_e) {}
+      try { ws.close(1013, 'backpressure'); } catch (_e) {}
+      return;
+    }
+    meta.pending += 1;
+    ws.send(encoded, (err) => {
+      meta.pending = Math.max(0, meta.pending - 1);
+      if (err) {
+        try { ws.terminate(); } catch (_e) {}
+      }
+    });
+  }
+
   // ─── heartbeat ──────────────────────────────────────────────────────
 
-  _heartbeat() {
+  async _heartbeat() {
     if (!this.wss) return;
     const refreshExpiry = Date.now() + 5 * 60 * 1000; // 5 min
+    // Pass 1: ping every socket and collect the seated ones that need a
+    // reservation refresh. The previous implementation fired up to 3
+    // Redis ops per socket — at 10k bots that was ~30k round-trips every
+    // 30s. We dedupe the players lookup per table and pipeline the
+    // per-socket reads/writes so each tick is ~3 round-trips total.
+    const seated = [];
     for (const ws of this.wss.clients) {
       const meta = ws._hijack;
       if (!meta) continue;
@@ -1168,48 +1251,78 @@ class Gateway {
       }
       meta.isAlive = false;
       try { ws.ping(); } catch (_e) {}
-      // While a seated socket is alive AND actually present in the
-      // engine's players[], refresh its seat reservation so the
-      // matchmaker doesn't reap it and reset the lobby ZSET to maxSeats.
-      // The engine-presence check is critical: otherwise a /sit call
-      // that lost the read-modify-write race against the worker tick
-      // leaves a phantom seat — alive WS, no engine entry — that pins
-      // the lobby card at "Full" while only 2 bots actually play.
       if (meta.bound && meta.tableId && meta.seat != null && meta.boundUserId && this.opts.redis) {
-        const k = `table:${meta.tableId}:seats`;
-        const tableKey = `table:${meta.tableId}`;
-        const seatStr = String(meta.seat);
-        const expectedUser = String(meta.boundUserId);
-        // Verify the user is in the engine's players[] before pinning.
-        this.opts.redis.hget(tableKey, 'players').then((rawPlayers) => {
-          let inEngine = false;
-          if (rawPlayers) {
-            try {
-              const arr = JSON.parse(rawPlayers);
-              inEngine = Array.isArray(arr) && arr.some(
-                (p) => String(p.playerId) === expectedUser
-                    && Number(p.seat) === Number(meta.seat),
-              );
-            } catch (_e) { /* malformed → treat as not in engine */ }
-          }
-          if (!inEngine) {
-            // Phantom seat: drop the reservation so the lobby openSeats
-            // can recover. Worker /process tick will also re-sync the
-            // ZSET via state-store applyTick.
-            return this.opts.redis.hdel(k, seatStr);
-          }
-          // Live + present: refresh. Preserve the reservation token.
-          return this.opts.redis.hget(k, seatStr).then((existing) => {
-            let token = '';
-            if (existing) {
-              const parts = String(existing).split('|');
-              token = parts[1] || '';
-            }
-            return this.opts.redis.hset(k, seatStr, `${expectedUser}|${token}|${refreshExpiry}`);
-          });
-        }).catch(() => { /* best-effort */ });
+        seated.push(ws);
       }
     }
+    if (seated.length === 0 || !this.opts.redis) return;
+
+    // Step 1: dedupe the engine-presence lookup per table.
+    const tableIds = new Set();
+    for (const ws of seated) tableIds.add(ws._hijack.tableId);
+    const tableIdList = [...tableIds];
+    let playersArrays;
+    try {
+      playersArrays = await Promise.all(
+        tableIdList.map((tid) => this.opts.redis.hget(`table:${tid}`, 'players').catch(() => null)),
+      );
+    } catch (_e) {
+      return;
+    }
+    const playersByTable = new Map();
+    for (let i = 0; i < tableIdList.length; i += 1) {
+      const raw = playersArrays[i];
+      let arr = null;
+      if (raw) { try { arr = JSON.parse(raw); } catch (_e) {} }
+      playersByTable.set(tableIdList[i], arr);
+    }
+
+    // Step 2: batch-read existing seat tokens so we can preserve them
+    // on the refresh. One pipeline = one round-trip.
+    let existingTokens = null;
+    try {
+      const pipeReads = this.opts.redis.pipeline();
+      for (const ws of seated) {
+        const meta = ws._hijack;
+        pipeReads.hget(`table:${meta.tableId}:seats`, String(meta.seat));
+      }
+      existingTokens = await pipeReads.exec();
+    } catch (_e) { existingTokens = null; }
+
+    // Step 3: batch-write all hdel/hset ops in a single pipeline.
+    try {
+      const pipeWrites = this.opts.redis.pipeline();
+      let queued = 0;
+      for (let i = 0; i < seated.length; i += 1) {
+        const meta = seated[i]._hijack;
+        const expectedUser = String(meta.boundUserId);
+        const players = playersByTable.get(meta.tableId);
+        const inEngine = Array.isArray(players) && players.some(
+          (p) => String(p.playerId) === expectedUser && Number(p.seat) === Number(meta.seat),
+        );
+        const seatKey = `table:${meta.tableId}:seats`;
+        const seatStr = String(meta.seat);
+        if (!inEngine) {
+          // Phantom seat: drop the reservation so the lobby openSeats
+          // can recover. Worker /process tick will also re-sync the
+          // ZSET via state-store applyTick.
+          pipeWrites.hdel(seatKey, seatStr);
+          queued += 1;
+          continue;
+        }
+        let token = '';
+        if (existingTokens && existingTokens[i]) {
+          const [err, val] = existingTokens[i];
+          if (!err && val) {
+            const parts = String(val).split('|');
+            token = parts[1] || '';
+          }
+        }
+        pipeWrites.hset(seatKey, seatStr, `${expectedUser}|${token}|${refreshExpiry}`);
+        queued += 1;
+      }
+      if (queued > 0) await pipeWrites.exec();
+    } catch (_e) { /* best-effort */ }
   }
 }
 

@@ -1,5 +1,7 @@
 import { createTheme } from '@mui/material/styles';
 
+export const APP_FONT_STACK = '"Futura", "Futura PT", "Futura Std", "Trebuchet MS", sans-serif';
+
 export const theme = createTheme({
   palette: {
     mode: 'dark',
@@ -20,7 +22,7 @@ export const theme = createTheme({
     divider: '#2A2D3A',
   },
   typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: APP_FONT_STACK,
   },
   components: {
     MuiCard: {

@@ -15,11 +15,11 @@ export interface GameState {
   maxSeats: number;
   tableName: string;
   lastRaiseSize: number;
-  winners: { seat: number; playerId: number }[];
+  winners: { seat: number; playerId: number | string }[];
 }
 
 export interface Player {
-  playerId: number;
+  playerId: number | string;
   username: string;
   seat: number;
   stack: number;

@@ -80,7 +80,7 @@ function normalizeGame(g: WireGame): TableState['game'] {
 
 function normalizePlayers(ps: WirePlayer[]): TableState['players'] {
   return (ps || []).map((p) => ({
-    playerId: typeof p.playerId === 'string' ? Number(p.playerId.replace(/\D/g, '')) || 0 : p.playerId,
+    playerId: p.playerId,
     username: p.username || `Seat ${p.seat}`,
     seat: Number(p.seat) || 0,
     stack: Number(p.stack) || 0,
@@ -198,12 +198,13 @@ export function useGameStateWS({ stake = '1-2', playerId, username, tableId: for
         return
       }
 
-      // 2b. PLAY PATH — claim a seat. If the requested table is fully
-      // taken by the time we ask, fall back to any open table at the same
-      // stake (Quick Join semantics: get me into A game, not THE table).
+      // 2b. PLAY PATH — claim a seat.
+      // Quick-join (no explicit tableId): fall back to another open table.
+      // Explicit tableId: do NOT hop; surface "table full" instead.
       const tried: string[] = []
       let attemptTable = targetTable
       let attemptMaxSeats = maxSeats
+      const allowFallback = !forceTableId
       const maxFallbacks = 4
       for (let attempt = 0; attempt <= maxFallbacks; attempt += 1) {
         if (!attemptTable) break
@@ -268,8 +269,9 @@ export function useGameStateWS({ stake = '1-2', playerId, username, tableId: for
           ws.onerror = () => setError('ws_error')
           return
         }
-        // table is full — pick the next one with open seats
+        // table is full
         tried.push(attemptTable)
+        if (!allowFallback) break
         try {
           const lobbyRes = await fetch(`${GATEWAY_HTTP}/lobby/${encodeURIComponent(stake)}`)
           if (!lobbyRes.ok) break
@@ -283,6 +285,7 @@ export function useGameStateWS({ stake = '1-2', playerId, username, tableId: for
           attemptMaxSeats = Number(next.maxSeats) || 6
         } catch { break }
       }
+      if (forceTableId) throw new Error('table_full')
       throw new Error(`could not claim a seat (tried ${tried.length} tables)`)
     } catch (err) {
       setError((err as Error).message)

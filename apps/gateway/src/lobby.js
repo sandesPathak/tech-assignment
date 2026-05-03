@@ -85,12 +85,13 @@ class LobbyManager {
    * Read the current table list for `stake` from Redis.
    * Returns `{ stake, meta, tables }` or `null` if the stake is unknown.
    */
-  async listTables(stake) {
+  async listTables(stake, playerId = null) {
     const meta = getStake(stake);
     if (!meta) return null;
     // ZRANGE with WITHSCORES gives [tableId1, openSeats1, tableId2, ...].
     const raw = await this.redis.zrange(stakeTablesKey(stake), 0, -1, 'WITHSCORES');
     const tables = [];
+    const wantedPlayerId = playerId == null ? null : String(playerId);
     for (let i = 0; i < raw.length; i += 2) {
       const tableId = raw[i];
       const openSeats = Number(raw[i + 1]);
@@ -98,6 +99,18 @@ class LobbyManager {
       // Fall back to stake defaults if the meta hash is missing.
       // eslint-disable-next-line no-await-in-loop
       const m = await this.redis.hgetall(tableMetaKey(tableId));
+      let heroSeated = false;
+      if (wantedPlayerId) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const playersRaw = await this.redis.hget(`table:${tableId}`, 'players');
+          if (playersRaw) {
+            const players = JSON.parse(playersRaw);
+            heroSeated = Array.isArray(players)
+              && players.some((p) => String(p.playerId) === wantedPlayerId);
+          }
+        } catch (_e) { /* best-effort */ }
+      }
       tables.push({
         tableId,
         name: m.name || `Table ${tableId}`,
@@ -105,6 +118,7 @@ class LobbyManager {
         maxSeats: Number(m.maxSeats || meta.maxSeats),
         smallBlind: Number(m.smallBlind || meta.smallBlind),
         bigBlind: Number(m.bigBlind || meta.bigBlind),
+        heroSeated,
       });
     }
     return { stake, meta, tables };
@@ -114,8 +128,8 @@ class LobbyManager {
    * REST handler — used by `apps/gateway/src/index.js` to serve
    * `GET /lobby/:stake`. Caller already parsed the URL.
    */
-  async handleRestList(stake, res) {
-    const data = await this.listTables(stake);
+  async handleRestList(stake, res, opts = {}) {
+    const data = await this.listTables(stake, opts.playerId || null);
     if (!data) {
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'unknown_stake' }));

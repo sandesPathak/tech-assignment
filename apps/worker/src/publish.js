@@ -63,6 +63,35 @@ class Publisher {
   }
 
   /**
+   * Publish a synthetic full-state delta when seats change outside the
+   * normal engine tick loop, e.g. `/sit` and `/leave`. Tagged with
+   * `step: -1` so the gateway doesn't advance its monotonic tick seq.
+   *
+   * @param {string|number} tableId
+   * @param {object} state { game, players, seq? }
+   * @param {string} kind descriptive membership event kind
+   */
+  async publishTableState(tableId, state, kind = 'table_state_sync') {
+    const msg = {
+      t: S2C.DELTA,
+      tableId: String(tableId),
+      seq: Number(state?.seq || 0),
+      step: -1,
+      payload: {
+        kind,
+        game: state?.game || null,
+        players: Array.isArray(state?.players) ? state.players : [],
+      },
+    };
+    injectTraceContext(msg);
+    try {
+      await this.redis.publish(channelFor(tableId), JSON.stringify(msg));
+    } catch (err) {
+      this.log('publish_table_state_failed', { tableId, kind, err: err.message });
+    }
+  }
+
+  /**
    * Publish a `hand_completed` signal after the worker reaches step 16
    * (RECORD_STATS_AND_NEW_HAND). Consumed by `apps/coach`, which loads
    * the durable hand-event range [1, lastSeq] and runs EV analysis.
@@ -100,6 +129,7 @@ class Publisher {
 class NullPublisher {
   async publishTick() {}
   async publishHandCompleted() {}
+  async publishTableState() {}
 }
 
 module.exports = { Publisher, NullPublisher, channelFor, HAND_COMPLETED_CHANNEL };

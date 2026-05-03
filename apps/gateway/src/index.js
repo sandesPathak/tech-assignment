@@ -17,6 +17,16 @@ const { createHandEventStore } = require('@hijack/worker/src/hand-event-store');
 const { initTracing, shutdownTracing } = require('@hijack/observability/tracing');
 const { createLogger } = require('@hijack/observability/logger');
 
+function getAutoFoldDecision({ waitedMs, seatLive, isBot, orphanAutoFoldMs, turnTimeoutMs }) {
+  if (!seatLive && isBot && waitedMs >= orphanAutoFoldMs) {
+    return { fold: true, reason: 'orphan_disconnect', shouldLeave: true };
+  }
+  if (waitedMs >= turnTimeoutMs) {
+    return { fold: true, reason: 'turn_timeout', shouldLeave: !seatLive && isBot };
+  }
+  return { fold: false, reason: null, shouldLeave: false };
+}
+
 async function main() {
   await initTracing({ serviceName: 'hijack-gateway' });
   const log = createLogger({ serviceName: 'hijack-gateway' });
@@ -78,10 +88,10 @@ async function main() {
 
     const STEP_DELAY = Number(process.env.PUMP_STEP_DELAY_MS || 900);
     const HAND_DELAY = Number(process.env.PUMP_HAND_DELAY_MS || 3000);
-    // Grace period before auto-folding a player whose WS is gone.
-    // Generous enough to ride out a quick reconnect, short enough that
-    // the table doesn't visibly stall.
+    // Give a briefly disconnected seat a short reconnect grace window,
+    // but always fold once the real turn timer expires.
     const ORPHAN_AUTOFOLD_MS = Number(process.env.PUMP_ORPHAN_AUTOFOLD_MS || 6000);
+    const TURN_TIMEOUT_MS = Number(process.env.PUMP_TURN_TIMEOUT_MS || 15000);
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
     const run = (async () => {
@@ -104,13 +114,10 @@ async function main() {
         const json = await res.json().catch(() => ({}));
         if (json.status === 'error' || json.status === 'not_found') return;
         if (json.status === 'awaiting_action') {
-          // The acting seat is in `json.move`. If that seat has no live
-          // WS bound to it on this gateway AND the seat is occupied by
-          // a bot (predictable playerId prefix), park briefly then
-          // auto-fold so the rest of the table doesn't hang on a dead
-          // bot process. Humans are NEVER auto-folded — they get the
-          // full 60s park (and no fold at all on timeout). Brief WS
-          // reconnects from a page reload won't punish the user.
+          // The acting seat is in `json.move`. Every seat gets the same
+          // turn timeout so the hand always advances. Bot seats still
+          // get an earlier fold when their socket is gone so dead bot
+          // processes do not stall a table.
           const actingSeat = Number(json.move);
           let actingPlayerId = null;
           try {
@@ -124,19 +131,30 @@ async function main() {
           const isBot = actingPlayerId && /^bot-/.test(actingPlayerId);
           let waited = 0;
           let autoFolded = false;
-          for (; waited < 60_000; waited += 200) {
+          for (; waited <= TURN_TIMEOUT_MS; waited += 200) {
             if (pendingAction.has(tableId)) break;
-            // Only consider auto-folding bot seats. Human seats park the
-            // full 60s and then the pump exits without acting.
-            if (isBot && waited >= ORPHAN_AUTOFOLD_MS && !isSeatLive(tableId, actingSeat)) {
+            const seatLive = isSeatLive(tableId, actingSeat);
+            const decision = getAutoFoldDecision({
+              waitedMs: waited,
+              seatLive,
+              isBot,
+              orphanAutoFoldMs: ORPHAN_AUTOFOLD_MS,
+              turnTimeoutMs: TURN_TIMEOUT_MS,
+            });
+            if (decision.fold) {
               pendingAction.set(tableId, { seat: actingSeat, action: 'fold', amount: 0 });
               autoFolded = true;
-              log.warn({ tableId, seat: actingSeat, playerId: actingPlayerId }, 'orphan_seat_autofold');
-              fetch(`${workerUrl}/leave`, {
-                method: 'POST',
-                headers: { 'content-type': 'application/json' },
-                body: JSON.stringify({ tableId, playerId: actingPlayerId }),
-              }).catch(() => { /* best-effort */ });
+              log.warn(
+                { tableId, seat: actingSeat, playerId: actingPlayerId, reason: decision.reason, waitedMs: waited, seatLive },
+                'seat_autofold'
+              );
+              if (decision.shouldLeave) {
+                fetch(`${workerUrl}/leave`, {
+                  method: 'POST',
+                  headers: { 'content-type': 'application/json' },
+                  body: JSON.stringify({ tableId, playerId: actingPlayerId }),
+                }).catch(() => { /* best-effort */ });
+              }
               break;
             }
             await sleep(200);
@@ -281,6 +299,49 @@ async function main() {
   gatewayRef = gateway;
   const port = parseInt(process.env.PORT || '3002', 10);
   await gateway.start({ port });
+
+  // Startup orphan-bot purge. Bot WS connections are owned by ephemeral
+  // swarm child processes; when the gateway dies, those children die
+  // with it, but the engine's `players[]` keeps the bot rows. The next
+  // gateway run sees them as orphan seats and folds them one-by-one as
+  // their turns come up — a hand at a "full" table can take ~30s of
+  // pure folding before any human gets a real opponent. Wipe all bot
+  // rows once at startup; live swarms re-seat within seconds via the
+  // normal claim → /sit flow, and any engine state gets re-synced from
+  // the worker tick that follows.
+  (async () => {
+    try {
+      const stakes = ['1-2', '5-10', '25-50'];
+      const tableIds = new Set();
+      for (const s of stakes) {
+        const ids = await redis.zrange(`lobby:${s}:tables`, 0, -1);
+        for (const id of ids) tableIds.add(id);
+      }
+      let removedTotal = 0;
+      for (const tableId of tableIds) {
+        const raw = await redis.hget(`table:${tableId}`, 'players');
+        if (!raw) continue;
+        let players;
+        try { players = JSON.parse(raw); } catch (_e) { continue; }
+        if (!Array.isArray(players) || players.length === 0) continue;
+        const bots = players.filter((p) => /^bot-/.test(String(p.playerId || '')));
+        if (bots.length === 0) continue;
+        for (const bot of bots) {
+          try {
+            await fetch(`${workerUrl}/leave`, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ tableId, playerId: bot.playerId }),
+            });
+            removedTotal += 1;
+          } catch (_e) { /* best-effort */ }
+        }
+      }
+      if (removedTotal > 0) log.info({ removed: removedTotal, tables: tableIds.size }, 'orphan_bots_purged');
+    } catch (err) {
+      log.warn({ err: err.message }, 'orphan_bot_purge_failed');
+    }
+  })().catch(() => { /* best-effort */ });
   // Phase 4 follow-up: HTTP /api/coach/:handId/:hero proxy + hand:completed
   // re-broadcast as s2c.delta with payload.kind='hand_completed'. Additive
   // — never modifies existing routes.
@@ -311,4 +372,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { main };
+module.exports = { main, getAutoFoldDecision };

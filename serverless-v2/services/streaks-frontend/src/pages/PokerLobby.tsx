@@ -1,6 +1,9 @@
-import { useEffect, useState, useRef, useMemo } from 'react'
+import { useEffect, useState, useRef, useMemo, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Box, Typography, Card, CardContent, Stack, CircularProgress, Button, Chip, Dialog, DialogTitle, DialogContent, IconButton, Tooltip } from '@mui/material'
+import { Box, Typography, Card, CardContent, Stack, CircularProgress, Button, Chip, Dialog, DialogTitle, DialogContent, IconButton, Tooltip, Avatar, Menu, MenuItem, ListItemIcon, ListItemText, Divider } from '@mui/material'
+import LogoutIcon from '@mui/icons-material/Logout'
+import BarChartIcon from '@mui/icons-material/BarChart'
+import PersonIcon from '@mui/icons-material/Person'
 import EditIcon from '@mui/icons-material/Edit'
 import CloseIcon from '@mui/icons-material/Close'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
@@ -19,6 +22,8 @@ import GroupIcon from '@mui/icons-material/Group'
 import PaymentsIcon from '@mui/icons-material/Payments'
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
 import gsap from 'gsap'
+import { keyframes } from '@mui/system'
+import { APP_FONT_STACK } from '../theme'
 
 const GATEWAY_HTTP = (import.meta.env.VITE_GATEWAY_HTTP_URL as string) || 'http://localhost:3002'
 
@@ -29,6 +34,7 @@ interface TableRow {
   maxSeats: number
   smallBlind: number
   bigBlind: number
+  heroSeated?: boolean
 }
 interface StakeBlock {
   stake: string
@@ -73,10 +79,28 @@ const C = {
 
 const AVATAR_COUNT = 24
 const AVATAR_KEY = 'hijack:avatarId'
+const ribbonSheen = keyframes`
+  0% { transform: translateX(-130%); opacity: 0; }
+  18% { opacity: 0.35; }
+  100% { transform: translateX(170%); opacity: 0; }
+`
+
+const ribbonPulse = keyframes`
+  0%, 100% { box-shadow: 0 0 0 rgba(255,122,32,0), 0 10px 16px rgba(0,0,0,0.28); }
+  50% { box-shadow: 0 0 20px rgba(255,140,50,0.48), 0 12px 18px rgba(0,0,0,0.3); }
+`
+
+function playerHeaders(): Record<string, string> {
+  const h: Record<string, string> = {}
+  const playerId = typeof window !== 'undefined' ? localStorage.getItem('playerId') : null
+  if (playerId) h['X-Player-Id'] = playerId
+  return h
+}
 
 function PokerLobby() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
+  const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null)
   const [avatarId, setAvatarId] = useState<string>(() => {
     const stored = typeof window !== 'undefined' ? localStorage.getItem(AVATAR_KEY) : null
     return stored ?? '1'
@@ -159,7 +183,9 @@ function PokerLobby() {
       try {
         const blocks = await Promise.all(
           STAKES.map(async (s) => {
-            const r = await fetch(`${GATEWAY_HTTP}/lobby/${encodeURIComponent(s)}`)
+            const r = await fetch(`${GATEWAY_HTTP}/lobby/${encodeURIComponent(s)}`, {
+              headers: playerHeaders(),
+            })
             if (!r.ok) throw new Error(`lobby ${s}: ${r.status}`)
             return r.json() as Promise<StakeBlock>
           })
@@ -183,15 +209,34 @@ function PokerLobby() {
     }
     pull()
     pullStats()
-    const id = setInterval(() => { pull(); pullStats(); }, 2000)
+    // Adaptive poll cadence: while the swarm is ramping the lobby payload
+    // can be ~1k tables × 3 stakes; polling that every 2s saturates both
+    // the gateway and the React reconciler. Slow to 6s when the swarm is
+    // running; tighten back to 2s once it's idle.
+    let currentMs = 2000
+    let id = setInterval(tick, currentMs)
+    function tick() {
+      pull()
+      pullStats()
+      const wantMs = lastStatsRef.current?.swarmRunning ? 6000 : 2000
+      if (wantMs !== currentMs) {
+        currentMs = wantMs
+        clearInterval(id)
+        id = setInterval(tick, currentMs)
+      }
+    }
     return () => { cancelled = true; clearInterval(id) }
   }, [])
 
   // Stagger-fade-in table cards on initial load + on data refresh.
+  // At swarm scale we render hundreds of cards — a 50ms-stagger queue
+  // across 1000 elements is ~50s of animation work and pegs the main
+  // thread. Skip the animation when there's a lot to render.
   useEffect(() => {
     if (!tablesGridRef.current) return
     const cards = tablesGridRef.current.querySelectorAll('[data-table-card]')
     if (cards.length === 0) return
+    if (cards.length > 60) return
     gsap.fromTo(
       cards,
       { opacity: 0, y: 18, scale: 0.96 },
@@ -213,7 +258,7 @@ function PokerLobby() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: C.bg, color: C.text, position: 'relative' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: C.bg, color: C.text, position: 'relative', fontFamily: APP_FONT_STACK }}>
       {/* Top app bar */}
       <Box
         sx={{
@@ -271,6 +316,68 @@ function PokerLobby() {
               LIVE
             </Box>
           </Box>
+          <IconButton onClick={(e) => setProfileAnchor(e.currentTarget)} sx={{ p: 0.5 }}>
+            <Avatar
+              sx={{
+                width: 36,
+                height: 36,
+                bgcolor: '#FF6B35',
+                fontSize: 15,
+                fontWeight: 700,
+                border: '2px solid #2A2D3A',
+              }}
+            >
+              {(user?.displayName || user?.email || displayName || '?').charAt(0).toUpperCase()}
+            </Avatar>
+          </IconButton>
+          <Menu
+            anchorEl={profileAnchor}
+            open={!!profileAnchor}
+            onClose={() => setProfileAnchor(null)}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            PaperProps={{
+              sx: {
+                bgcolor: '#1A1D27',
+                border: '1px solid #2A2D3A',
+                borderRadius: 3,
+                mt: 1,
+                minWidth: 220,
+                '& .MuiMenuItem-root': { fontSize: 13, color: '#fff', py: 1.2 },
+                '& .MuiMenuItem-root:hover': { bgcolor: '#141720' },
+              },
+            }}
+          >
+            <Box sx={{ px: 2, py: 1.5 }}>
+              <Box display="flex" alignItems="center" gap={1.5}>
+                <Avatar sx={{ width: 40, height: 40, bgcolor: '#FF6B35', fontSize: 16, fontWeight: 700 }}>
+                  {(user?.displayName || user?.email || displayName || '?').charAt(0).toUpperCase()}
+                </Avatar>
+                <Box>
+                  <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>
+                    {user?.displayName || displayName || 'Player'}
+                  </Typography>
+                  <Typography sx={{ fontSize: 11, color: '#8B8FA3' }}>
+                    {user?.email || ''}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+            <Divider sx={{ borderColor: '#2A2D3A' }} />
+            <MenuItem onClick={() => { setProfileAnchor(null); navigate('/'); }}>
+              <ListItemIcon><PersonIcon sx={{ color: '#8B8FA3', fontSize: 20 }} /></ListItemIcon>
+              <ListItemText>Dashboard</ListItemText>
+            </MenuItem>
+            <MenuItem onClick={() => { setProfileAnchor(null); navigate('/admin'); }}>
+              <ListItemIcon><BarChartIcon sx={{ color: '#60A5FA', fontSize: 20 }} /></ListItemIcon>
+              <ListItemText>Admin Analytics</ListItemText>
+            </MenuItem>
+            <Divider sx={{ borderColor: '#2A2D3A' }} />
+            <MenuItem onClick={() => { setProfileAnchor(null); signOut(); }}>
+              <ListItemIcon><LogoutIcon sx={{ color: '#EF5350', fontSize: 20 }} /></ListItemIcon>
+              <ListItemText sx={{ '& .MuiTypography-root': { color: '#EF5350' } }}>Sign Out</ListItemText>
+            </MenuItem>
+          </Menu>
         </Stack>
       </Box>
 
@@ -440,6 +547,7 @@ function PokerLobby() {
                 background:
                   'linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(11,19,38,0.85) 50%, rgba(255,107,53,0.18) 100%)',
                 border: `1px solid ${C.border}`,
+                boxShadow: '0 16px 38px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04)',
                 '&::before': {
                   content: '""',
                   position: 'absolute',
@@ -451,29 +559,73 @@ function PokerLobby() {
                 },
               }}
             >
-              <HeroDealAnimation />
-              <Box sx={{ position: 'relative', zIndex: 5, width: '100%', maxWidth: { md: '56%' } }}>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: { xs: 12, md: 12 },
+                  left: { xs: 18, md: 22 },
+                  width: 'fit-content',
+                  maxWidth: { xs: 'calc(100% - 36px)', md: 'calc(100% - 44px)' },
+                  height: { xs: 42, md: 46 },
+                  zIndex: 8,
+                  transform: 'none',
+                  filter: 'drop-shadow(0 0 10px rgba(255,140,60,0.38))',
+                }}
+              >
                 <Box
                   sx={{
-                    display: 'inline-block',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: 2,
-                    color: C.orange,
-                    bgcolor: C.orangeSoft,
-                    border: '1px solid rgba(255,107,53,0.4)',
-                    borderRadius: 1,
-                    px: 1,
-                    py: 0.5,
-                    mb: 1.5,
+                    position: 'relative',
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    fontSize: { xs: 11, md: 13 },
+                    fontWeight: 900,
+                    letterSpacing: { xs: 2.1, md: 2.8 },
+                    textTransform: 'uppercase',
+                    whiteSpace: 'nowrap',
+                    px: { xs: 2.6, md: 3.2 },
+                    fontFamily: APP_FONT_STACK,
+                    textShadow: '0 1px 5px rgba(0,0,0,0.34)',
+                    background:
+                      'linear-gradient(135deg, #ffc437 0%, #ff9f16 38%, #ff7600 100%)',
+                    borderRadius: 2,
+                    border: '1px solid rgba(255,214,108,0.5)',
+                    boxShadow:
+                      'inset 0 1px 0 rgba(255,255,255,0.36), inset 0 -8px 14px rgba(122,50,12,0.3), 0 10px 16px rgba(0,0,0,0.28)',
+                    animation: `${ribbonPulse} 2.8s ease-in-out infinite`,
+                    overflow: 'hidden',
                   }}
                 >
-                  WELCOME
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      inset: 0,
+                      pointerEvents: 'none',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        bottom: 0,
+                        left: '-28%',
+                        width: '20%',
+                        background:
+                          'linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.4), rgba(255,255,255,0))',
+                        animation: `${ribbonSheen} 2.1s ease-in-out infinite`,
+                      },
+                    }}
+                  />
+                  $15 WELCOME BOOST ON US
                 </Box>
-                <Typography sx={{ fontSize: { xs: 26, md: 34 }, fontWeight: 700, color: '#fff', mb: 1, letterSpacing: -0.5 }}>
+              </Box>
+              <HeroDealAnimation />
+              <Box sx={{ position: 'relative', zIndex: 6, width: '100%', maxWidth: { md: '56%' }, mt: { xs: 4.6, md: 5 } }}>
+                <Typography sx={{ fontSize: { xs: 26, md: 34 }, fontWeight: 700, color: '#fff', mb: 1, letterSpacing: -0.5, fontFamily: APP_FONT_STACK }}>
                   NEON FELT IS LIVE
                 </Typography>
-                <Typography sx={{ color: C.textDim, maxWidth: 560, fontSize: 15 }}>
+                <Typography sx={{ color: C.textDim, maxWidth: 560, fontSize: 15, fontFamily: APP_FONT_STACK }}>
                   Pick a stake, claim a seat, and the matchmaker spins up a fresh table the moment one fills.
                 </Typography>
               </Box>
@@ -715,15 +867,58 @@ function PokerLobby() {
                       {block.tables.length === 0 && (
                         <Typography sx={{ color: '#666', fontStyle: 'italic' }}>No active tables.</Typography>
                       )}
-                      {block.tables.map((t) => (
-                        <TableCard
-                          key={t.tableId}
-                          row={t}
-                          tierLabel={tierLabel}
-                          onPlay={() => navigate(`/play?stake=${block.stake}&tableId=${t.tableId}`)}
-                          onWatch={() => navigate(`/play?stake=${block.stake}&tableId=${t.tableId}&spectate=1`)}
-                        />
-                      ))}
+                      {/* Render cap: at swarm scale a single stake can have
+                          ~1000 tables and rendering all of them is what
+                          makes the UI choppy. Surface the most active
+                          tables first so the user sees where the bots are
+                          actually playing — partially-filled (1 ≤ seated <
+                          max) wins over full, which wins over empty. */}
+                      {(() => {
+                        const MAX_CARDS = 30
+                        const seatedOf = (t: TableRow) => (t.maxSeats ?? 0) - (t.openSeats ?? 0)
+                        const rank = (t: TableRow) => {
+                          const s = seatedOf(t)
+                          const max = t.maxSeats ?? 0
+                          if (s > 0 && s < max) return 0 // partial — most interesting
+                          if (s >= max && max > 0) return 1 // full
+                          return 2 // empty
+                        }
+                        const sorted = [...block.tables].sort((a, b) => {
+                          const ra = rank(a)
+                          const rb = rank(b)
+                          if (ra !== rb) return ra - rb
+                          return seatedOf(b) - seatedOf(a) // more bots first
+                        })
+                        const visible = sorted.slice(0, MAX_CARDS)
+                        const hidden = block.tables.length - visible.length
+                        return (
+                          <>
+                            {visible.map((t) => (
+                              <TableCard
+                                key={t.tableId}
+                                row={t}
+                                tierLabel={tierLabel}
+                                onPlay={() => navigate(`/play?stake=${block.stake}&tableId=${t.tableId}`)}
+                                onWatch={() => navigate(`/play?stake=${block.stake}&tableId=${t.tableId}&spectate=1`)}
+                              />
+                            ))}
+                            {hidden > 0 && (
+                              <Box
+                                sx={{
+                                  gridColumn: '1 / -1',
+                                  textAlign: 'center',
+                                  color: C.textDim,
+                                  fontSize: 12,
+                                  py: 1,
+                                  opacity: 0.7,
+                                }}
+                              >
+                                +{hidden} more tables — showing top {visible.length} by activity
+                              </Box>
+                            )}
+                          </>
+                        )
+                      })()}
                     </Box>
                   </Box>
                 )
@@ -842,7 +1037,7 @@ function SideLink({
   )
 }
 
-function TableCard({
+const TableCard = memo(function TableCard({
   row,
   tierLabel,
   onPlay,
@@ -855,6 +1050,7 @@ function TableCard({
 }) {
   const seated = row.maxSeats - row.openSeats
   const full = row.openSeats === 0
+  const heroSeated = !!row.heroSeated
   // Deterministic suit triplet per table so the background stays stable.
   const SUITS = ['♠', '♥', '♦', '♣']
   let h = 0
@@ -870,6 +1066,7 @@ function TableCard({
       sx={{
         position: 'relative',
         bgcolor: C.surface,
+        opacity: heroSeated ? 0.45 : 1,
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
         border: `1px solid ${C.border}`,
@@ -937,23 +1134,44 @@ function TableCard({
           </Typography>
           <Typography sx={{ color: C.textDim, fontSize: 12 }}>No Limit Hold&rsquo;em</Typography>
         </Box>
-        <Box
-          sx={{
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: 1.5,
-            color: tierLabel === 'MID' ? C.orange : C.cyan,
-            bgcolor: tierLabel === 'MID' ? C.orangeSoft : C.cyanSoft,
-            border: `1px solid ${tierLabel === 'MID' ? 'rgba(249,115,22,0.4)' : C.borderHi}`,
-            borderRadius: 1,
-            px: 1,
-            py: 0.25,
-            whiteSpace: 'nowrap',
-            flexShrink: 0,
-          }}
-        >
-          {tierLabel} STAKES
-        </Box>
+        <Stack direction="row" spacing={0.75} alignItems="center">
+          {heroSeated && (
+            <Box
+              sx={{
+                fontSize: 10,
+                fontWeight: 800,
+                letterSpacing: 1.2,
+                color: '#fff',
+                bgcolor: 'rgba(148,163,184,0.2)',
+                border: '1px solid rgba(148,163,184,0.45)',
+                borderRadius: 1,
+                px: 1,
+                py: 0.25,
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+              }}
+            >
+              YOU
+            </Box>
+          )}
+          <Box
+            sx={{
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: 1.5,
+              color: tierLabel === 'MID' ? C.orange : C.cyan,
+              bgcolor: tierLabel === 'MID' ? C.orangeSoft : C.cyanSoft,
+              border: `1px solid ${tierLabel === 'MID' ? 'rgba(249,115,22,0.4)' : C.borderHi}`,
+              borderRadius: 1,
+              px: 1,
+              py: 0.25,
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+            }}
+          >
+            {tierLabel} STAKES
+          </Box>
+        </Stack>
       </Box>
       <CardContent sx={{ position: 'relative', zIndex: 1 }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
@@ -1042,7 +1260,19 @@ function TableCard({
       </CardContent>
     </Card>
   )
-}
+}, (a, b) => (
+  // Skip re-render unless the openSeats/maxSeats actually changed for
+  // this row. The polling cycle replaces `data` every 2–6s, but most
+  // rows are unchanged — without this, all 30+ visible cards re-render.
+  a.tierLabel === b.tierLabel &&
+  a.row.tableId === b.row.tableId &&
+  a.row.openSeats === b.row.openSeats &&
+  a.row.maxSeats === b.row.maxSeats &&
+  a.row.smallBlind === b.row.smallBlind &&
+  a.row.bigBlind === b.row.bigBlind &&
+  a.row.name === b.row.name &&
+  a.row.heroSeated === b.row.heroSeated
+))
 
 // Hero "live community deal" animation — plays a flop/turn/river loop on the
 // right side of the hero banner. Pure CSS keyframes, ~6s loop.
@@ -1203,7 +1433,7 @@ function CardFace({ rank, suit }: { rank: string; suit: '♠' | '♥' | '♦' | 
         color,
       }}
     >
-      <Box sx={{ position: 'absolute', top: 6, left: 6, textAlign: 'center', lineHeight: 1, fontFamily: 'Inter, sans-serif', fontWeight: 900 }}>
+      <Box sx={{ position: 'absolute', top: 6, left: 6, textAlign: 'center', lineHeight: 1, fontFamily: APP_FONT_STACK, fontWeight: 900 }}>
         <Box sx={{ fontSize: 14 }}>{rank}</Box>
         <Box sx={{ fontSize: 12, mt: '1px' }}>{suit}</Box>
       </Box>
@@ -1219,7 +1449,7 @@ function CardFace({ rank, suit }: { rank: string; suit: '♠' | '♥' | '♦' | 
       >
         {suit}
       </Box>
-      <Box sx={{ position: 'absolute', bottom: 6, right: 6, textAlign: 'center', lineHeight: 1, fontFamily: 'Inter, sans-serif', fontWeight: 900, transform: 'rotate(180deg)', transformOrigin: 'center' }}>
+      <Box sx={{ position: 'absolute', bottom: 6, right: 6, textAlign: 'center', lineHeight: 1, fontFamily: APP_FONT_STACK, fontWeight: 900, transform: 'rotate(180deg)', transformOrigin: 'center' }}>
         <Box sx={{ fontSize: 14 }}>{rank}</Box>
         <Box sx={{ fontSize: 12, mt: '1px' }}>{suit}</Box>
       </Box>

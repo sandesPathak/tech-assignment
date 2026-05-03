@@ -70,10 +70,16 @@ function startBot({ wsUrl, joinToken, tableId, seat, botId }) {
 
   // Steps 5/7/9/11 are PRE_FLOP / FLOP / TURN / RIVER betting rounds.
   const BETTING_STEPS = new Set([5, 7, 9, 11]);
+  function isBettingStep() {
+    if (!game) return false;
+    const step = Number(game.handStep);
+    if (BETTING_STEPS.has(step)) return true;
+    const name = String(game.stepName || '');
+    return name.includes('BETTING');
+  }
   function maybeAct() {
     if (!game) return;
-    const step = Number(game.handStep);
-    if (!BETTING_STEPS.has(step)) return;
+    if (!isBettingStep()) return;
     const acting = Number(game.move);
     if (acting !== Number(mySeat)) return;
     const me = (players || []).find((p) => Number(p.seat) === Number(mySeat));
@@ -101,6 +107,7 @@ function startBot({ wsUrl, joinToken, tableId, seat, botId }) {
       else if (game) {
         // Merge legacy thin delta fields into the existing game.
         if (p.to != null) game.handStep = p.to;
+        if (p.stepName != null) game.stepName = p.stepName;
         if (p.move != null) game.move = p.move;
         if (p.pot != null) game.pot = p.pot;
         if (p.currentBet != null) game.currentBet = p.currentBet;

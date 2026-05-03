@@ -21,14 +21,18 @@ function HandHistoryLog({ entries }: HandHistoryLogProps) {
         borderRadius: 2,
         border: '1px solid #1e2a3a',
         p: 1.5,
-        maxHeight: 200,
-        overflowY: 'auto',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: 0,
         fontFamily: 'monospace',
       }}
     >
-      <Typography sx={{ color: '#546E7A', fontSize: 11, fontWeight: 700, mb: 1 }}>
+      <Typography sx={{ color: '#546E7A', fontSize: 11, fontWeight: 700, mb: 1, flexShrink: 0 }}>
         HAND HISTORY
       </Typography>
+      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+      {/* entries scroll inside */}
       {entries.length === 0 ? (
         <Typography sx={{ color: '#37474F', fontSize: 11 }}>
           No actions yet. Click &quot;Next Step&quot; to begin.
@@ -48,6 +52,7 @@ function HandHistoryLog({ entries }: HandHistoryLogProps) {
           </Typography>
         ))
       )}
+      </Box>
     </Box>
   );
 }

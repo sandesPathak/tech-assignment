@@ -10,7 +10,7 @@ import {
   CardContent,
 } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
-import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import FireAnimation from '../components/FireAnimation';
 import { useAuth } from '../hooks/useAuth';
 
 function Login() {
@@ -83,7 +83,9 @@ function Login() {
         <CardContent sx={{ p: 4 }}>
           {/* Logo / Title */}
           <Box display="flex" flexDirection="column" alignItems="center" mb={4}>
-            <LocalFireDepartmentIcon sx={{ fontSize: 48, color: '#FF6B35', mb: 1 }} />
+            <Box mb={1}>
+              <FireAnimation size={56} containerWidth={88} />
+            </Box>
             <Typography variant="h5" fontWeight={700} color="#fff">
               Hijack Poker
             </Typography>

@@ -302,7 +302,7 @@ function PokerGame() {
         </Box>
       </Box>
 
-      <Box sx={{ width: { md: 220, lg: 250 }, flexShrink: 0, bgcolor: '#0d1117', borderLeft: '1px solid #1e2a3a', p: 1.5, overflowY: 'auto', display: { xs: 'none', md: 'block' } }}>
+      <Box sx={{ width: { md: 220, lg: 250 }, flexShrink: 0, bgcolor: '#0d1117', borderLeft: '1px solid #1e2a3a', p: 1.5, display: { xs: 'none', md: 'flex' }, flexDirection: 'column', minHeight: 0 }}>
         <HandHistoryLog entries={entries} />
       </Box>
     </Box>

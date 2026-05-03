@@ -1,6 +1,6 @@
 import { Typography, Box, Button, IconButton, Chip, Avatar, Menu, MenuItem, ListItemIcon, ListItemText, Divider, Tooltip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import FireAnimation from './FireAnimation';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -46,7 +46,7 @@ function DashboardHeader({ tier, data, user, todayCheckedIn, isExcluded, selfExc
       mb={4}
     >
       <Box display="flex" alignItems="center" gap={1.5}>
-        <LocalFireDepartmentIcon sx={{ fontSize: 36, color: 'primary.main', filter: 'drop-shadow(0 0 12px rgba(255,107,53,0.7))' }} />
+        <FireAnimation size={36} containerWidth={64} />
         <Typography
           variant="h4"
           fontWeight={800}

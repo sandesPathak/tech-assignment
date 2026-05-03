@@ -17,6 +17,7 @@ import BoltIcon from '@mui/icons-material/Bolt'
 import StopIcon from '@mui/icons-material/Stop'
 import GroupIcon from '@mui/icons-material/Group'
 import PaymentsIcon from '@mui/icons-material/Payments'
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
 import gsap from 'gsap'
 
 const GATEWAY_HTTP = (import.meta.env.VITE_GATEWAY_HTTP_URL as string) || 'http://localhost:3002'
@@ -230,6 +231,7 @@ function PokerLobby() {
           borderBottom: `1px solid ${C.border}`,
         }}
       >
+        <HeaderFireAnimation />
         <Stack direction="row" alignItems="center" spacing={1.5}>
           <Button
             onClick={() => navigate('/')}
@@ -238,18 +240,6 @@ function PokerLobby() {
           >
             Back
           </Button>
-          <Typography
-            sx={{
-              fontWeight: 900,
-              fontStyle: 'italic',
-              fontSize: { xs: 18, md: 22 },
-              color: C.orange,
-              letterSpacing: 0.5,
-              textShadow: '0 0 10px rgba(249,115,22,0.45)',
-            }}
-          >
-            HIJACK POKER
-          </Typography>
         </Stack>
         <Stack direction="row" alignItems="center" spacing={1.5}>
           <Box
@@ -1185,6 +1175,155 @@ function CardFace({ rank, suit }: { rank: string; suit: '♠' | '♥' | '♦' | 
         <Box sx={{ fontSize: 14 }}>{rank}</Box>
         <Box sx={{ fontSize: 12, mt: '1px' }}>{suit}</Box>
       </Box>
+    </Box>
+  )
+}
+
+function HeaderFireAnimation() {
+  const sparks = useMemo(
+    () =>
+      Array.from({ length: 6 }, (_, i) => ({
+        left: 14 + i * 6,
+        delay: (i * 0.35) % 1.6,
+        duration: 1.6 + (i % 3) * 0.4,
+        size: 3 + (i % 3),
+      })),
+    []
+  )
+
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        top: 0,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 1.25,
+        pointerEvents: 'none',
+        zIndex: 1,
+        px: 2,
+        '@keyframes fireGlow': {
+          '0%, 100%': {
+            filter: 'drop-shadow(0 0 6px rgba(249,115,22,0.55)) drop-shadow(0 0 14px rgba(234,88,12,0.35))',
+          },
+          '50%': {
+            filter: 'drop-shadow(0 0 12px rgba(255,165,0,0.95)) drop-shadow(0 0 24px rgba(249,115,22,0.65))',
+          },
+        },
+        '@keyframes fireFlicker': {
+          '0%, 100%': { transform: 'scale(1) rotate(-2deg)', opacity: 1 },
+          '20%': { transform: 'scale(1.08) rotate(3deg)', opacity: 0.95 },
+          '40%': { transform: 'scale(0.95) rotate(-3deg)', opacity: 1 },
+          '60%': { transform: 'scale(1.05) rotate(2deg)', opacity: 0.9 },
+          '80%': { transform: 'scale(0.98) rotate(-1deg)', opacity: 1 },
+        },
+        '@keyframes fireJiggle': {
+          '0%, 100%': { transform: 'translateX(-50%) translateY(0px)' },
+          '50%': { transform: 'translateX(-50%) translateY(-2px)' },
+        },
+        '@keyframes sparkRise': {
+          '0%': { transform: 'translateY(8px) scale(0.6)', opacity: 0 },
+          '20%': { opacity: 1 },
+          '100%': { transform: 'translateY(-28px) scale(0.2)', opacity: 0 },
+        },
+        '@keyframes ringPulse': {
+          '0%': { transform: 'translate(-50%,-50%) scale(0.4)', opacity: 0.55 },
+          '100%': { transform: 'translate(-50%,-50%) scale(1.6)', opacity: 0 },
+        },
+        '@keyframes hueShift': {
+          '0%, 100%': { color: '#ff7a18' },
+          '50%': { color: '#ffb347' },
+        },
+      }}
+    >
+      {/* expanding ring pulse */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          width: 28,
+          height: 28,
+          borderRadius: '50%',
+          border: '1.5px solid rgba(249,115,22,0.6)',
+          animation: 'ringPulse 2.2s ease-out infinite',
+        }}
+      />
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          width: 28,
+          height: 28,
+          borderRadius: '50%',
+          border: '1.5px solid rgba(255,165,0,0.5)',
+          animation: 'ringPulse 2.2s ease-out 1.1s infinite',
+        }}
+      />
+
+      {/* rising sparks */}
+      {sparks.map((s, i) => (
+        <Box
+          key={i}
+          sx={{
+            position: 'absolute',
+            bottom: 8,
+            left: s.left,
+            width: s.size,
+            height: s.size,
+            borderRadius: '50%',
+            bgcolor: i % 2 === 0 ? '#ffb347' : '#ff7a18',
+            boxShadow: '0 0 6px rgba(255,165,0,0.85)',
+            animation: `sparkRise ${s.duration}s ease-out ${s.delay}s infinite`,
+          }}
+        />
+      ))}
+
+      {/* main fire icon — flicker + glow + jiggle stack */}
+      <Box
+        sx={{
+          position: 'relative',
+          animation: 'fireJiggle 1.8s ease-in-out infinite',
+          display: 'flex',
+        }}
+      >
+        <Box
+          sx={{
+            animation: 'fireGlow 1.6s ease-in-out infinite',
+            display: 'flex',
+          }}
+        >
+          <Box
+            sx={{
+              animation: 'fireFlicker 0.8s ease-in-out infinite, hueShift 2.4s ease-in-out infinite',
+              transformOrigin: 'bottom center',
+              display: 'flex',
+            }}
+          >
+            <LocalFireDepartmentIcon sx={{ fontSize: 30 }} />
+          </Box>
+        </Box>
+      </Box>
+
+      <Typography
+        sx={{
+          fontWeight: 900,
+          fontStyle: 'italic',
+          fontSize: { xs: 18, md: 22 },
+          color: '#ff7a18',
+          letterSpacing: 0.5,
+          textShadow: '0 0 10px rgba(249,115,22,0.45)',
+          whiteSpace: 'nowrap',
+          animation: 'hueShift 2.4s ease-in-out infinite',
+        }}
+      >
+        HIJACK POKER
+      </Typography>
     </Box>
   )
 }

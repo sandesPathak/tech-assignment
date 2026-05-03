@@ -630,29 +630,77 @@ function PokerLobby() {
               )}
               {filteredBlocks.map((block) => {
                 const tierLabel = TIER_LABEL[block.stake] ?? 'STAKES'
+                const tierAccent: Record<string, { hex: string; soft: string; tagline: string }> = {
+                  MICRO: { hex: '#38BDF8', soft: 'rgba(56,189,248,0.14)', tagline: 'Beginner-friendly · low risk' },
+                  LOW:   { hex: '#4ADE80', soft: 'rgba(74,222,128,0.14)', tagline: 'Casual grind · steady stakes' },
+                  MID:   { hex: '#FB923C', soft: 'rgba(251,146,60,0.14)', tagline: 'Serious play · bigger pots' },
+                  HIGH:  { hex: '#F472B6', soft: 'rgba(244,114,182,0.14)', tagline: 'High roller · max risk' },
+                }
+                const accent = tierAccent[tierLabel] ?? { hex: '#94A3B8', soft: 'rgba(148,163,184,0.14)', tagline: '' }
+                const seatCap = block.tables.reduce((acc, t) => acc + (t.maxSeats ?? block.meta.maxSeats), 0)
+                const seatedCount = block.tables.reduce((acc, t) => acc + ((t.maxSeats ?? block.meta.maxSeats) - (t.openSeats ?? 0)), 0)
                 return (
                   <Box key={block.stake}>
-                    <Stack direction="row" alignItems="baseline" spacing={1.5} mb={1.5}>
-                      <Typography sx={{ color: '#fff', fontWeight: 700, fontSize: 18 }}>
-                        {block.meta.name}
-                      </Typography>
-                      <Chip
-                        label={tierLabel}
-                        size="small"
-                        sx={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          letterSpacing: 1.5,
-                          color: tierLabel === 'MID' ? C.orange : C.cyan,
-                          bgcolor: tierLabel === 'MID' ? C.orangeSoft : C.cyanSoft,
-                          border: `1px solid ${tierLabel === 'MID' ? 'rgba(249,115,22,0.4)' : C.borderHi}`,
-                          height: 20,
-                        }}
-                      />
-                      <Typography sx={{ color: C.textDim, fontSize: 13 }}>
-                        Blinds ${block.meta.smallBlind}/${block.meta.bigBlind} · seats {block.meta.maxSeats}
-                      </Typography>
-                    </Stack>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'stretch',
+                        gap: 2,
+                        mb: 2,
+                        pb: 1.5,
+                        borderBottom: `1px solid ${accent.soft}`,
+                      }}
+                    >
+                      {/* Accent bar */}
+                      <Box sx={{ width: 4, borderRadius: 2, bgcolor: accent.hex, boxShadow: `0 0 12px ${accent.hex}80`, flexShrink: 0 }} />
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Stack direction="row" alignItems="center" spacing={1.5} flexWrap="wrap">
+                          <Typography
+                            sx={{
+                              color: accent.hex,
+                              fontWeight: 900,
+                              fontSize: 22,
+                              letterSpacing: 3,
+                              textTransform: 'uppercase',
+                              lineHeight: 1.1,
+                              textShadow: `0 0 20px ${accent.hex}40`,
+                            }}
+                          >
+                            {tierLabel} STAKES
+                          </Typography>
+                          <Typography sx={{ color: '#fff', fontWeight: 700, fontSize: 16, opacity: 0.85 }}>
+                            ${block.meta.smallBlind} / ${block.meta.bigBlind}
+                          </Typography>
+                          <Box
+                            sx={{
+                              ml: 'auto',
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: 1.2,
+                              color: accent.hex,
+                              bgcolor: accent.soft,
+                              border: `1px solid ${accent.hex}55`,
+                              borderRadius: 999,
+                              px: 1.25,
+                              py: 0.25,
+                            }}
+                          >
+                            {block.tables.length} {block.tables.length === 1 ? 'TABLE' : 'TABLES'}
+                          </Box>
+                        </Stack>
+                        <Stack direction="row" spacing={2} mt={0.5} sx={{ color: C.textDim, fontSize: 12, flexWrap: 'wrap' }}>
+                          <Box component="span">{accent.tagline}</Box>
+                          <Box component="span" sx={{ color: '#52596B' }}>•</Box>
+                          <Box component="span">{block.meta.maxSeats} seats per table</Box>
+                          {seatCap > 0 && (
+                            <>
+                              <Box component="span" sx={{ color: '#52596B' }}>•</Box>
+                              <Box component="span">{seatedCount}/{seatCap} seated</Box>
+                            </>
+                          )}
+                        </Stack>
+                      </Box>
+                    </Box>
                     <Box
                       sx={{
                         display: 'grid',

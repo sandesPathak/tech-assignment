@@ -174,12 +174,17 @@ function PokerTable({ tableState, timerProgress, timeLeft, heroPlayerId, heroDis
   // VISUAL POSITION → seat number (not array index) so empty seats are
   // correctly skipped on the felt rather than shifting everyone over.
   const maxSeats = Math.max(game.maxSeats || 6, 6);
-  const heroSeat = heroSeatProp != null ? Number(heroSeatProp) : 1;
+  // When `heroSeatProp` is null we're a spectator — no seat belongs to
+  // us. Anchor the layout to seat 1 for stability, but keep `heroSeat`
+  // null so the per-player `isHero` check below evaluates false for
+  // everyone (no "(You)" tag, no face-up cards on a stranger's seat).
+  const layoutAnchorSeat = heroSeatProp != null ? Number(heroSeatProp) : 1;
+  const heroSeat: number | null = heroSeatProp != null ? Number(heroSeatProp) : null;
   const playerBySeat = new Map<number, typeof players[number]>();
   for (const p of players) playerBySeat.set(Number(p.seat), p);
   const orderedPlayers: (typeof players[number] | null)[] = [];
   for (let i = 0; i < ORDERED_POSITIONS.length; i += 1) {
-    const seatNum = ((heroSeat - 1 + i) % maxSeats) + 1;
+    const seatNum = ((layoutAnchorSeat - 1 + i) % maxSeats) + 1;
     orderedPlayers.push(playerBySeat.get(seatNum) || null);
   }
 
@@ -316,6 +321,10 @@ function PokerTable({ tableState, timerProgress, timeLeft, heroPlayerId, heroDis
           if (!pos || !player) return null;
           const isActing = game.move === player.seat && player.status === '1' && game.stepName.includes('BETTING');
           const isHero = player.seat === heroSeat;
+          // Upper-rim seats (NW, N, NE) render their hole cards / stack /
+          // bet / action ABOVE the avatar so the info never overlaps the
+          // felt or community cards.
+          const cardsAbove = idx === 2 || idx === 3 || idx === 4;
           const displayPlayer = isHero && heroDisplayName
             ? { ...player, username: heroDisplayName }
             : player;
@@ -338,6 +347,7 @@ function PokerTable({ tableState, timerProgress, timeLeft, heroPlayerId, heroDis
                 timeLeft={isActing ? timeLeft : undefined}
                 isHero={isHero}
                 avatarSrc={avatarFor(player.seat, isHero)}
+                cardsAbove={cardsAbove}
               />
             </Box>
           );

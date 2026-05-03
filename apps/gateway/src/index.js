@@ -55,12 +55,33 @@ async function main() {
   const inflight = new Map();   // tableId → Promise
   const pendingAction = new Map(); // tableId → playerAction (latest wins)
 
+  // Late-bound: gateway is constructed below us. We pass this lookup
+  // into pumpTable so the auto-fold-on-disconnect check can probe live
+  // sockets without circular-importing the Gateway class.
+  let gatewayRef = null;
+  function isSeatLive(tableId, seat) {
+    if (!gatewayRef || !gatewayRef.byTable) return true; // best-effort
+    const set = gatewayRef.byTable.get(String(tableId));
+    if (!set) return false;
+    for (const ws of set) {
+      const meta = ws._hijack;
+      if (!meta) continue;
+      if (meta.spectator) continue;
+      if (Number(meta.seat) === Number(seat)) return true;
+    }
+    return false;
+  }
+
   async function pumpTable(tableId, playerAction) {
     if (playerAction) pendingAction.set(tableId, playerAction);
     if (inflight.has(tableId)) return inflight.get(tableId);
 
     const STEP_DELAY = Number(process.env.PUMP_STEP_DELAY_MS || 900);
     const HAND_DELAY = Number(process.env.PUMP_HAND_DELAY_MS || 3000);
+    // Grace period before auto-folding a player whose WS is gone.
+    // Generous enough to ride out a quick reconnect, short enough that
+    // the table doesn't visibly stall.
+    const ORPHAN_AUTOFOLD_MS = Number(process.env.PUMP_ORPHAN_AUTOFOLD_MS || 6000);
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
     const run = (async () => {
@@ -83,12 +104,44 @@ async function main() {
         const json = await res.json().catch(() => ({}));
         if (json.status === 'error' || json.status === 'not_found') return;
         if (json.status === 'awaiting_action') {
-          // Park until an action is queued.
-          for (let waited = 0; waited < 60_000; waited += 100) {
+          // The acting seat is in `json.move`. If that seat has no live
+          // WS bound to it on this gateway AND the seat is occupied by
+          // a bot (predictable playerId prefix), park briefly then
+          // auto-fold so the rest of the table doesn't hang on a dead
+          // bot process. Humans are NEVER auto-folded — they get the
+          // full 60s park (and no fold at all on timeout). Brief WS
+          // reconnects from a page reload won't punish the user.
+          const actingSeat = Number(json.move);
+          let actingPlayerId = null;
+          try {
+            const raw = await redis.hget(`table:${tableId}`, 'players');
+            if (raw) {
+              const arr = JSON.parse(raw);
+              const acting = arr.find((p) => Number(p.seat) === actingSeat);
+              if (acting) actingPlayerId = String(acting.playerId || '');
+            }
+          } catch (_e) { /* best-effort */ }
+          const isBot = actingPlayerId && /^bot-/.test(actingPlayerId);
+          let waited = 0;
+          let autoFolded = false;
+          for (; waited < 60_000; waited += 200) {
             if (pendingAction.has(tableId)) break;
-            await sleep(100);
+            // Only consider auto-folding bot seats. Human seats park the
+            // full 60s and then the pump exits without acting.
+            if (isBot && waited >= ORPHAN_AUTOFOLD_MS && !isSeatLive(tableId, actingSeat)) {
+              pendingAction.set(tableId, { seat: actingSeat, action: 'fold', amount: 0 });
+              autoFolded = true;
+              log.warn({ tableId, seat: actingSeat, playerId: actingPlayerId }, 'orphan_seat_autofold');
+              fetch(`${workerUrl}/leave`, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ tableId, playerId: actingPlayerId }),
+              }).catch(() => { /* best-effort */ });
+              break;
+            }
+            await sleep(200);
           }
-          if (!pendingAction.has(tableId)) return; // 60s idle → give up
+          if (!pendingAction.has(tableId) && !autoFolded) return; // idle exhausted → give up
           continue;
         }
         if (json.handDone) {
@@ -223,6 +276,9 @@ async function main() {
     log: (evt, fields) => log.warn(fields, evt),
   });
 
+  // Wire the late-bound gateway reference so pumpTable's auto-fold can
+  // probe live sockets via gatewayRef.byTable.
+  gatewayRef = gateway;
   const port = parseInt(process.env.PORT || '3002', 10);
   await gateway.start({ port });
   // Phase 4 follow-up: HTTP /api/coach/:handId/:hero proxy + hand:completed

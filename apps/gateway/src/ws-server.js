@@ -537,19 +537,31 @@ class Gateway {
     // Per-IP rate limit — 30 claim attempts / minute. The legitimate
     // claim path on join is at most ~6 tries (one per seat). Anything
     // above that is a script trying to brute-force occupancy.
+    //
+    // Trusted callers bypass the limit:
+    //   • loopback (127.0.0.1 / ::1) — the bot swarm runs in-process via
+    //     the gateway's `/admin/swarm` spawn, so all 10k bots share this IP.
+    //   • requests carrying a valid x-admin-token — the operator console
+    //     and remote-deployed swarm runners.
     const ip = (req.socket && req.socket.remoteAddress) || 'unknown';
-    this._claimBuckets = this._claimBuckets || new Map();
-    const now = Date.now();
-    const bucket = this._claimBuckets.get(ip) || { tokens: 30, ts: now };
-    bucket.tokens = Math.min(30, bucket.tokens + ((now - bucket.ts) / 60_000) * 30);
-    bucket.ts = now;
-    if (bucket.tokens < 1) {
+    const isLoopback = ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+    const adminToken = process.env.ADMIN_TOKEN;
+    const hasAdmin = adminToken && req.headers['x-admin-token'] === adminToken;
+    const bypassRateLimit = isLoopback || hasAdmin;
+    if (!bypassRateLimit) {
+      this._claimBuckets = this._claimBuckets || new Map();
+      const now = Date.now();
+      const bucket = this._claimBuckets.get(ip) || { tokens: 30, ts: now };
+      bucket.tokens = Math.min(30, bucket.tokens + ((now - bucket.ts) / 60_000) * 30);
+      bucket.ts = now;
+      if (bucket.tokens < 1) {
+        this._claimBuckets.set(ip, bucket);
+        res.writeHead(429, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'rate_limited' }));
+      }
+      bucket.tokens -= 1;
       this._claimBuckets.set(ip, bucket);
-      res.writeHead(429, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ error: 'rate_limited' }));
     }
-    bucket.tokens -= 1;
-    this._claimBuckets.set(ip, bucket);
     let body = '';
     for await (const chunk of req) body += chunk;
     let parsed;
@@ -868,6 +880,20 @@ class Gateway {
         ws._hijack.seat = claims.seat;
         ws._hijack.boundUserId = String(claims.sub);
         ws._hijack.bound = true;
+        // Pin the seat reservation while this WS is alive. The seat-claim
+        // Lua writes a 30s TTL — long enough for the WS handshake but
+        // short enough that the matchmaker reaps it once we're seated,
+        // which then resets the lobby ZSET back to maxSeats and makes
+        // the table look empty in the UI even though we're actively
+        // playing. The heartbeat loop refreshes this every interval.
+        try {
+          const longExpiry = Date.now() + 5 * 60 * 1000; // 5 min
+          await this.opts.redis.hset(
+            `table:${tableId}:seats`,
+            String(claims.seat),
+            `${claims.sub}|${claims.reservationToken}|${longExpiry}`,
+          );
+        } catch (_e) { /* best-effort */ }
       } catch (err) {
         return this._send(ws, mkError('bad_join_token', err.message));
       }
@@ -1132,6 +1158,7 @@ class Gateway {
 
   _heartbeat() {
     if (!this.wss) return;
+    const refreshExpiry = Date.now() + 5 * 60 * 1000; // 5 min
     for (const ws of this.wss.clients) {
       const meta = ws._hijack;
       if (!meta) continue;
@@ -1141,6 +1168,47 @@ class Gateway {
       }
       meta.isAlive = false;
       try { ws.ping(); } catch (_e) {}
+      // While a seated socket is alive AND actually present in the
+      // engine's players[], refresh its seat reservation so the
+      // matchmaker doesn't reap it and reset the lobby ZSET to maxSeats.
+      // The engine-presence check is critical: otherwise a /sit call
+      // that lost the read-modify-write race against the worker tick
+      // leaves a phantom seat — alive WS, no engine entry — that pins
+      // the lobby card at "Full" while only 2 bots actually play.
+      if (meta.bound && meta.tableId && meta.seat != null && meta.boundUserId && this.opts.redis) {
+        const k = `table:${meta.tableId}:seats`;
+        const tableKey = `table:${meta.tableId}`;
+        const seatStr = String(meta.seat);
+        const expectedUser = String(meta.boundUserId);
+        // Verify the user is in the engine's players[] before pinning.
+        this.opts.redis.hget(tableKey, 'players').then((rawPlayers) => {
+          let inEngine = false;
+          if (rawPlayers) {
+            try {
+              const arr = JSON.parse(rawPlayers);
+              inEngine = Array.isArray(arr) && arr.some(
+                (p) => String(p.playerId) === expectedUser
+                    && Number(p.seat) === Number(meta.seat),
+              );
+            } catch (_e) { /* malformed → treat as not in engine */ }
+          }
+          if (!inEngine) {
+            // Phantom seat: drop the reservation so the lobby openSeats
+            // can recover. Worker /process tick will also re-sync the
+            // ZSET via state-store applyTick.
+            return this.opts.redis.hdel(k, seatStr);
+          }
+          // Live + present: refresh. Preserve the reservation token.
+          return this.opts.redis.hget(k, seatStr).then((existing) => {
+            let token = '';
+            if (existing) {
+              const parts = String(existing).split('|');
+              token = parts[1] || '';
+            }
+            return this.opts.redis.hset(k, seatStr, `${expectedUser}|${token}|${refreshExpiry}`);
+          });
+        }).catch(() => { /* best-effort */ });
+      }
     }
   }
 }

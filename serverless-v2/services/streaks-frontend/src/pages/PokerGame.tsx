@@ -125,9 +125,16 @@ function PokerGame() {
     : null
 
   const handleTimeout = useCallback((seat: number) => {
-    handleAction(seat, 'fold')
-    addEntry(`Seat ${seat} auto-folded (time expired)`, 'error')
-  }, [handleAction, addEntry])
+    // NEVER auto-fold the human player. The 15s client-side timer is a
+    // safety net for stuck bot/spectator seats, not a hand-pressure
+    // feature aimed at the user. Folding the user without their consent
+    // is the bug that made the engine appear to "play on their behalf".
+    if (mySeat != null && Number(seat) === Number(mySeat)) return
+    // For other seats: also skip. The bots have their own action loop;
+    // a single client shouldn't be racing them to fold their hand. The
+    // gateway's seat-spoof guard would reject this anyway.
+    return
+  }, [mySeat])
 
   const { timeLeft, progress } = useTurnTimer(actingSeat, handleTimeout)
 

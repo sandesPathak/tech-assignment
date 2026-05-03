@@ -118,6 +118,23 @@ class StateStore {
     );
     pipe.ltrim(KEY_EVENTS(tableId), -this.eventTailCap, -1);
 
+    // Keep the lobby ZSET score (= openSeats) honest by deriving it from
+    // the actual engine players[]. The seat-claim path decrements the
+    // score on reservation, but stale reservations or aborted /sit calls
+    // can leave the score out of sync — so we re-sync on every tick.
+    // Cheap: 1 zadd. Reads `stake` from the meta hash (sub-millisecond).
+    try {
+      const meta = await this.redis.hgetall(`table:${tableId}:meta`);
+      if (meta && meta.stake) {
+        const maxSeats = Number(meta.maxSeats || state.game?.maxSeats || 0);
+        const seated = Array.isArray(state.players) ? state.players.length : 0;
+        if (maxSeats > 0) {
+          const open = Math.max(0, maxSeats - seated);
+          pipe.zadd(`lobby:${meta.stake}:tables`, open, String(tableId));
+        }
+      }
+    } catch (_e) { /* best-effort */ }
+
     if (seq % this.snapshotEvery === 0) {
       pipe.set(KEY_SNAPSHOT(tableId), JSON.stringify(stateWithSeq));
       // Trim the in-Redis tail aggressively after a snapshot — the

@@ -10,6 +10,7 @@ const { C2S, S2C } = require('@hijack/protocol/messages');
 
 const HTTP = process.env.GATEWAY_HTTP_URL || 'http://127.0.0.1:3002';
 const WS  = process.env.HIJACK_GATEWAY_URL || 'ws://127.0.0.1:3002';
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || '';
 const STAKES = ['1-2', '5-10', '25-50'];
 const BETTING_STEPS = new Set([5, 7, 9, 11]);
 
@@ -27,7 +28,8 @@ let connected = 0;
 let lastReport = Date.now();
 const conns = [];
 
-async function pickOpenSeat() {
+async function pickOpenSeat(excludeTableIds) {
+  const exclude = excludeTableIds || new Set();
   if (TARGET_TABLE_ID && TARGET_STAKE) {
     try {
       const r = await fetch(`${HTTP}/lobby/${TARGET_STAKE}`);
@@ -39,41 +41,65 @@ async function pickOpenSeat() {
     } catch (_e) {}
     return null;
   }
-  // round-robin across stakes
+  // Spread the herd: collect ALL open tables across stakes and pick one
+  // at random. Picking the first hit always converges every bot in a wave
+  // onto the same table, so only 6 seat-claims win and the rest fail.
+  const candidates = [];
   for (const stake of STAKES) {
     try {
       const r = await fetch(`${HTTP}/lobby/${stake}`);
       if (!r.ok) continue;
       const body = await r.json();
-      const t = (body.tables || []).find((x) => x.openSeats > 0);
-      if (t) return { stake, tableId: t.tableId, maxSeats: t.maxSeats };
+      for (const t of body.tables || []) {
+        if (t.openSeats > 0 && !exclude.has(t.tableId)) {
+          candidates.push({ stake, tableId: t.tableId, maxSeats: t.maxSeats });
+        }
+      }
     } catch (_e) {}
   }
-  return null;
+  if (candidates.length === 0) return null;
+  return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
 async function spawnOne(idx) {
-  // Retry a few times with backoff — the matchmaker may not have
-  // spawned enough tables yet when the swarm starts ramping.
-  let target = null;
-  for (let attempt = 0; attempt < 5; attempt += 1) {
-    target = await pickOpenSeat();
-    if (target) break;
-    await new Promise((r) => setTimeout(r, 200 * (attempt + 1)));
-  }
-  if (!target) return false;
   const userId = `${ID_PREFIX}-${String(idx).padStart(5, '0')}`;
+  // Outer retry: when a wave of bots converges on the same table, only
+  // `maxSeats` claims win — the rest must fall back to a different table.
+  // Without this loop those bots silently give up and the swarm never
+  // reaches its target.
+  const tried = new Set();
+  let target = null;
   let claim = null;
   let mySeat = null;
-  for (let s = 1; s <= target.maxSeats; s += 1) {
-    try {
-      const cr = await fetch(`${HTTP}/seat-claim`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ stake: target.stake, tableId: target.tableId, seat: s, userId }),
-      });
-      if (cr.ok) { claim = await cr.json(); mySeat = s; break; }
-    } catch (_e) {}
+  for (let outer = 0; outer < 8 && !claim; outer += 1) {
+    target = null;
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      target = await pickOpenSeat(tried);
+      if (target) break;
+      await new Promise((r) => setTimeout(r, 200 * (attempt + 1)));
+    }
+    if (!target) return false;
+    tried.add(target.tableId);
+    // Randomize seat order so concurrent bots on the same table don't all
+    // race for seat 1 → seat 2 → seat 3 in lockstep.
+    const seats = [];
+    for (let s = 1; s <= target.maxSeats; s += 1) seats.push(s);
+    for (let i = seats.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [seats[i], seats[j]] = [seats[j], seats[i]];
+    }
+    for (const s of seats) {
+      try {
+        const headers = { 'content-type': 'application/json' };
+        if (ADMIN_TOKEN) headers['x-admin-token'] = ADMIN_TOKEN;
+        const cr = await fetch(`${HTTP}/seat-claim`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ stake: target.stake, tableId: target.tableId, seat: s, userId }),
+        });
+        if (cr.ok) { claim = await cr.json(); mySeat = s; break; }
+      } catch (_e) {}
+    }
   }
   if (!claim) return false;
 

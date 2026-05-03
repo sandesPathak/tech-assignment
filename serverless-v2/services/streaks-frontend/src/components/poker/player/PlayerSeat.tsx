@@ -14,6 +14,9 @@ interface PlayerSeatProps {
   timeLeft?: number;
   isHero?: boolean;
   avatarSrc?: string | null;
+  /** Render cards, stack, bet, action ABOVE the avatar instead of below.
+   *  Used for upper-rim seats so their info doesn't overlap the felt. */
+  cardsAbove?: boolean;
 }
 
 const AVATAR_COLORS = ['#e53935', '#43A047', '#1E88E5', '#FB8C00', '#8E24AA', '#00ACC1'];
@@ -69,12 +72,15 @@ function getTimerColor(timeLeft: number): string {
   return '#EF5350';
 }
 
-function PlayerSeat({ player, game, timerProgress, timeLeft, isHero, avatarSrc }: PlayerSeatProps) {
+function PlayerSeat({ player, game, timerProgress, timeLeft, isHero, avatarSrc, cardsAbove }: PlayerSeatProps) {
   const isDealer = game.dealerSeat === player.seat;
   const isSB = game.smallBlindSeat === player.seat;
   const isBB = game.bigBlindSeat === player.seat;
   const isFolded = player.status === '11';
   const isAllIn = player.status === '12';
+  // Player just sat down mid-hand and is parked until the next gamePrep.
+  // Render dimmed so they're clearly not part of the active hand.
+  const isWaitingNextHand = player.status === '6';
   const isShowdown = SHOWDOWN_STEPS.includes(game.stepName);
   const hasCards = player.cards && player.cards.length > 0;
   // Cards we received look like real ranks ("AH", "KS"). The gateway
@@ -119,7 +125,7 @@ function PlayerSeat({ player, game, timerProgress, timeLeft, isHero, avatarSrc }
         flexDirection: 'column',
         alignItems: 'center',
         gap: 0.5,
-        opacity: isFolded ? 0.35 : 1,
+        opacity: isFolded || isWaitingNextHand ? 0.4 : 1,
         transition: 'opacity 0.3s ease, transform 0.3s ease',
         transform: isActing ? 'scale(1.1)' : 'scale(1)',
         minWidth: 90,
@@ -261,9 +267,26 @@ function PlayerSeat({ player, game, timerProgress, timeLeft, isHero, avatarSrc }
         )}
       </Box>
 
-      {/* Hole cards. For the hero we render a 3D flip wrapper so a tap
-          flips between back-of-card (default) and the real two cards.
-          The cards still render face-up at showdown automatically. */}
+      {/* Cards / stack / bet / action — rendered either inline (default,
+          below the avatar) or stacked ABOVE the avatar via an absolutely
+          positioned container so upper-rim seats don't drop their info
+          onto the felt. */}
+      <Box
+        sx={cardsAbove ? {
+          position: 'absolute',
+          bottom: '100%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          flexDirection: 'column-reverse',
+          alignItems: 'center',
+          gap: 0.5,
+          pb: 0.75,
+          pointerEvents: 'auto',
+        } : {
+          display: 'contents',
+        }}
+      >
       {cardsDealt && hasCards && !isFolded && (
         <Box sx={{ animation: `${popIn} 0.4s ease-out` }}>
           {isHero ? (
@@ -372,6 +395,7 @@ function PlayerSeat({ player, game, timerProgress, timeLeft, isHero, avatarSrc }
           <ActionBadge action={player.action} />
         </Box>
       )}
+      </Box>
 
       {/* Showdown overlay — winnings + hand rank stacked as an absolute
           ribbon over the avatar/cards so they never push siblings down

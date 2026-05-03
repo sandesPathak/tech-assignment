@@ -56,7 +56,12 @@ function advance(game, players, playerAction) {
 
 function gamePrep(game, players) {
   for (const p of players) {
-    if (p.status !== PLAYER_STATUS.SITTING_OUT && p.status !== PLAYER_STATUS.BUSTED) {
+    // WAIT_FOR_BB players just joined mid-hand and were intentionally
+    // held out by the /sit handler. The next hand starts now, so flip
+    // them to ACTIVE so they get dealt in.
+    if (p.status === PLAYER_STATUS.WAIT_FOR_BB) {
+      p.status = PLAYER_STATUS.ACTIVE;
+    } else if (p.status !== PLAYER_STATUS.SITTING_OUT && p.status !== PLAYER_STATUS.BUSTED) {
       p.status = PLAYER_STATUS.ACTIVE;
     }
     p.bet = 0;

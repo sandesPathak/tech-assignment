@@ -1250,7 +1250,9 @@ function HeaderFireAnimation() {
           height: 28,
           borderRadius: '50%',
           border: '1.5px solid rgba(249,115,22,0.6)',
-          animation: 'ringPulse 2.2s ease-out infinite',
+          opacity: 0,
+          transform: 'translate(-50%,-50%) scale(0.4)',
+          animation: 'ringPulse 2.2s ease-out infinite both',
         }}
       />
       <Box
@@ -1262,7 +1264,9 @@ function HeaderFireAnimation() {
           height: 28,
           borderRadius: '50%',
           border: '1.5px solid rgba(255,165,0,0.5)',
-          animation: 'ringPulse 2.2s ease-out 1.1s infinite',
+          opacity: 0,
+          transform: 'translate(-50%,-50%) scale(0.4)',
+          animation: 'ringPulse 2.2s ease-out 1.1s infinite both',
         }}
       />
 
@@ -1279,7 +1283,8 @@ function HeaderFireAnimation() {
             borderRadius: '50%',
             bgcolor: i % 2 === 0 ? '#ffb347' : '#ff7a18',
             boxShadow: '0 0 6px rgba(255,165,0,0.85)',
-            animation: `sparkRise ${s.duration}s ease-out ${s.delay}s infinite`,
+            opacity: 0,
+            animation: `sparkRise ${s.duration}s ease-out ${s.delay}s infinite both`,
           }}
         />
       ))}
